@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import sqlite3
+import ssl
 import subprocess
 import sys
 import time
@@ -20,7 +21,7 @@ from pathlib import Path
 from typing import List, Optional
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlsplit
-from urllib.request import HTTPCookieProcessor, Request, build_opener
+from urllib.request import HTTPCookieProcessor, HTTPSHandler, Request, build_opener
 from uuid import UUID
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -43,10 +44,21 @@ class APIError(SetupError):
 
 
 class Gateway:
-    def __init__(self, base_url: str) -> None:
+    def __init__(self, base_url: str, ca_file: Optional[str] = None) -> None:
         self.base_url = validate_gateway_url(base_url)
         self.cookies = CookieJar()
-        self.opener = build_opener(HTTPCookieProcessor(self.cookies))
+        try:
+            context = ssl.create_default_context()
+            if ca_file:
+                context.load_verify_locations(
+                    cafile=str(Path(ca_file).expanduser())
+                )
+        except (OSError, ssl.SSLError):
+            raise SetupError("Could not load the Gateway CA certificate file.") from None
+        self.opener = build_opener(
+            HTTPCookieProcessor(self.cookies),
+            HTTPSHandler(context=context),
+        )
 
     def request(self, method: str, path: str, body: Optional[dict] = None):
         data = None if body is None else json.dumps(body).encode("utf-8")
@@ -64,8 +76,17 @@ class Gateway:
                 raw = response.read()
         except HTTPError as error:
             raise APIError(error.code, method, path) from None
-        except URLError:
-            raise SetupError("Could not reach the Switch Gateway.") from None
+        except URLError as error:
+            reason = str(error.reason) or "unknown network error"
+            message = f"Could not reach the Switch Gateway at {self.base_url}: {reason}."
+            if isinstance(error.reason, ssl.SSLCertVerificationError) or (
+                "CERTIFICATE_VERIFY_FAILED" in reason
+            ):
+                message += (
+                    " To fix TLS verification, set SWITCH_CA_FILE or pass "
+                    "--ca-file with the trusted CA certificate."
+                )
+            raise SetupError(message) from None
         if not raw:
             return None
         try:
@@ -123,6 +144,10 @@ def gateway_url(args: argparse.Namespace) -> str:
     return validate_gateway_url(value)
 
 
+def gateway_ca_file(args: argparse.Namespace) -> Optional[str]:
+    return args.ca_file or os.environ.get("SWITCH_CA_FILE") or None
+
+
 def gateway_client(args: argparse.Namespace) -> Gateway:
     email = args.email or os.environ.get("SWITCH_GATEWAY_EMAIL", "").strip()
     if not email:
@@ -139,7 +164,7 @@ def gateway_client(args: argparse.Namespace) -> Gateway:
             ) from None
     if not password:
         raise SetupError("A Switch Gateway password is required.")
-    client = Gateway(gateway_url(args))
+    client = Gateway(gateway_url(args), gateway_ca_file(args))
     client.login(email, password)
     return client
 
@@ -619,6 +644,7 @@ def dry_run_request(
 
 def add_common_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--gateway", help="Gateway API base URL ending in /gateway")
+    parser.add_argument("--ca-file", help="CA certificate file for the Gateway TLS connection")
     parser.add_argument("--email", help="Gateway account email, or set SWITCH_GATEWAY_EMAIL")
     parser.add_argument("--dry-run", action="store_true", help="Print the plan without making changes")
 

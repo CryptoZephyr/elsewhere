@@ -54,8 +54,7 @@ the local HTTPS default. For volunteers on other machines, set it to a
 Gateway URL they can reach. The printed invite line includes that URL. Gateway
 URLs must end in `/gateway`, and non-local URLs must use HTTPS. Set
 `SWITCH_GATEWAY_EMAIL` to skip the email prompt. No password or cookie is
-written to disk. Add `--dry-run` to any command to print its planned requests
-without calling the API or changing the workdirs.
+written to disk. For a private or self-signed Gateway, use `SWITCH_CA_FILE` or `--ca-file PATH` with a locally available CA certificate. Add `--dry-run` to any command to print its planned requests without calling the API or changing the workdirs.
 
 ### Solo (one person, about 5 minutes)
 
