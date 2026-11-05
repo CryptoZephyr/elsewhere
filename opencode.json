@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "bash": {
+      "*": "deny",
+      "mkdir *": "allow",
+      "cd *": "allow",
+      "python3 *": "allow",
+      "cat *": "allow",
+      "ls": "allow",
+      "pwd": "allow",
+      "python3 --version": "allow",
+      "git clone *": "allow"
+    },
+    "edit": {
+      "*": "allow"
+    },
+    "external_directory": "deny",
+    "webfetch": "deny"
+  }
+}

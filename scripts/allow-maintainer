@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""Allow one maintainer identity and agent in one room for a volunteer agent."""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote, urlsplit
+from urllib.request import Request, urlopen
+from uuid import UUID
+
+
+def required(name: str) -> str:
+    value = os.environ.get(name, "").strip()
+    if not value:
+        raise ValueError(f"Set {name}.")
+    return value
+
+
+def uuid_value(name: str) -> str:
+    value = required(name)
+    try:
+        return str(UUID(value))
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a UUID.") from exc
+
+
+def request_json(url: str, cookie: str, method: str = "GET", body: dict | None = None):
+    data = json.dumps(body).encode() if body is not None else None
+    request = Request(
+        url,
+        data=data,
+        method=method,
+        headers={
+            "Cookie": f"switch_auth={cookie}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urlopen(request, timeout=20) as response:
+            return json.load(response)
+    except HTTPError as exc:
+        raise RuntimeError(f"Switch API returned HTTP {exc.code}.") from None
+    except URLError as exc:
+        raise RuntimeError("Could not reach the Switch API.") from exc
+
+
+def main() -> int:
+    try:
+        base = required("SWITCH_GATEWAY_API").rstrip("/")
+        parsed = urlsplit(base)
+        if parsed.scheme not in ("http", "https") or not parsed.netloc:
+            raise ValueError("SWITCH_GATEWAY_API must be an HTTP(S) Gateway URL.")
+        if parsed.username or parsed.password or parsed.query or parsed.fragment:
+            raise ValueError("SWITCH_GATEWAY_API must not include credentials or query data.")
+        cookie = required("SWITCH_AUTH_COOKIE")
+        volunteer_id = uuid_value("VOLUNTEER_AGENT_ID")
+        room_id = uuid_value("ROOM_ID")
+        maintainer_agent_id = uuid_value("MAINTAINER_AGENT_ID")
+        maintainer_user_id = uuid_value("MAINTAINER_USER_ID")
+
+        agent_url = f"{base}/agents/{quote(volunteer_id, safe='')}"
+        agent = request_json(agent_url, cookie)
+        policy = agent.get("addressing_policy")
+        rules = policy.get("rules") if isinstance(policy, dict) else None
+        if not isinstance(rules, list) or not rules:
+            raise ValueError("The volunteer agent has no explicit owner policy to preserve.")
+        if any(not rule.get("owner") and not rule.get("owner_agents") for rule in rules):
+            raise ValueError("The current policy already has a non-owner rule; refusing to widen it.")
+
+        scoped_rule = {
+            "rooms": [room_id],
+            "room_groups": "*",
+            "users": [maintainer_user_id],
+            "agents": [maintainer_agent_id],
+            "owner": False,
+            "owner_agents": False,
+            "platform": False,
+        }
+        updated = [rule for rule in rules if rule != scoped_rule]
+        updated.append(scoped_rule)
+        request_json(
+            f"{base}/agents/{quote(volunteer_id, safe='')}/addressing-policy",
+            cookie,
+            method="PUT",
+            body={"policy": {"rules": updated}},
+        )
+        print("Maintainer addressing rule applied.")
+        return 0
+    except (ValueError, RuntimeError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

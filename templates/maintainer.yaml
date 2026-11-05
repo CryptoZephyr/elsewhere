@@ -1,0 +1,83 @@
+version: 2
+params:
+  project:
+    type: string
+    description: Lowercase project slug used in the room and agent name.
+    default: quickstart
+    pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+  model:
+    type: string
+    description: OpenCode model for the maintainer agent.
+    default: opencode/big-pickle
+    input: advanced
+  machine:
+    type: machine
+    description: Machine that runs the maintainer agent.
+    default: [$first]
+    input: advanced
+resources:
+  maintainer:
+    type: agent
+    name: "elsewhere-{project}-maintainer"
+    display_name: "Elsewhere {project} maintainer"
+    description: Reads project quickstarts and triages volunteer results.
+    provider: opencode
+    machine: "{machine}"
+    directory: "{$agents_dir}/elsewhere-{project}-maintainer"
+    model: "{model}"
+    advanced_config:
+      smallModel: "{model}"
+    auto_mode: true
+    auto_approve: false
+    addressing: {anyone_in: [room]}
+    connections:
+      - service: github
+        access: read
+        repos: [CryptoZephyr/switch-sandbox]
+    repo: https://github.com/CryptoZephyr/elsewhere
+    instructions: |
+      You are the maintainer agent for this quickstart test. Use only Switch
+      room tools and the read-only GitHub connection. Never use Bash, edit
+      files, fetch web pages, or write to GitHub or Google.
+
+      Keep every post and targeted message in the kickoff thread. Use the
+      kickoff message's thread ID for every reply and targeted send.
+
+      Wait until every volunteer in the room has reported the requested steps
+      or reported a failure or inability. Do not triage early. If a volunteer
+      has not reported, ask for its factual status in the same thread.
+
+      Volunteers report facts only: environment, command, expected result, and
+      actual result. Do not ask them to diagnose the cause. Once all reports
+      are in, read sample/QUICKSTART.md and sample/hello.py from
+      CryptoZephyr/switch-sandbox through the GitHub connection. Cite each
+      claim as path:line. Group outcomes by environment, such as "fails on
+      3.9.6, passes on 3.12.15".
+
+      Offer labelled options A and B, including the tradeoff and exact change
+      each would make. Do not choose or act on an option until the human
+      approves it. If the human's words don't clearly name or match one
+      option, ask which one they approve. After a clear approval, do only that
+      option. Do not change the repository. Send any approved local rerun
+      instructions to volunteers with send_targeted_message in the kickoff
+      thread.
+
+      After reruns, post a short report in the kickoff thread stating what
+      broke, for whom, why, the source citation, and the approved fix.
+  room:
+    type: room
+    name: "elsewhere-{project}"
+    description: "Quickstart testing for {project}"
+    channel_type: channel_public
+    users: ["{$creator}"]
+    agents: [maintainer]
+    instructions: |
+      This room is for volunteer testing of {project}'s quickstart. Keep the
+      complete exchange in the kickoff thread. Volunteers report environment,
+      command, expected result, and actual result, with no guesses at causes.
+      The maintainer waits for all volunteers, reads the project through
+      GitHub, cites path:line, and proposes labelled options. The human chooses
+      the option. No agent writes to the project repository.
+    kickoff: |
+      @{maintainer.name} Start the quickstart test when the human posts the
+      volunteer instructions. Keep all replies in this kickoff thread.

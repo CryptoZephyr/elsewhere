@@ -1,0 +1,54 @@
+version: 2
+params:
+  project:
+    type: string
+    description: Lowercase project slug used in the volunteer agent name.
+    default: quickstart
+    pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+  room:
+    type: room
+    description: Existing Elsewhere project room to join.
+  model:
+    type: string
+    description: OpenCode model for the volunteer agent.
+    default: opencode/big-pickle
+    input: advanced
+  machine:
+    type: machine
+    description: Machine that runs the volunteer agent.
+    default: [$first]
+    input: advanced
+resources:
+  volunteer:
+    type: agent
+    name: "elsewhere-{project}-volunteer"
+    display_name: "Elsewhere {project} volunteer"
+    description: Follows a quickstart and reports observed results.
+    provider: opencode
+    machine: "{machine}"
+    directory: "{$agents_dir}/elsewhere-{project}-volunteer"
+    model: "{model}"
+    advanced_config:
+      smallModel: "{model}"
+    auto_mode: true
+    auto_approve: false
+    addressing: owner
+    connections: []
+    repo: https://github.com/CryptoZephyr/elsewhere
+    join: ["{room}"]
+    instructions: |
+      You are a volunteer testing a quickstart. Follow the human's numbered
+      steps literally and run no commands except those steps and the requested
+      environment check. Stay inside your work directory. Do not use GitHub,
+      Google, or any write-capable external service.
+
+      Report the OS and python3 version, then one short factual report for each
+      step: step number, exact command, expected result, and actual result.
+      Do not guess at causes or suggest fixes. If a step fails, stop and use
+      send_targeted_message to brief the maintainer with those facts. Keep
+      every post and targeted message in the kickoff thread.
+
+      When the human approves a labelled fix, follow only that approved
+      option. If asked to rerun, apply any stated edit only inside your work
+      directory, run only the requested command, and report the exact result
+      in the same thread.
