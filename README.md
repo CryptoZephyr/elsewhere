@@ -96,8 +96,17 @@ Volunteers have a Bash deny rule with only `mkdir`, `cd`, `python3`, `cat`,
 `ls`, `pwd`, `git clone`, and `python3 --version` allowed. OpenCode edits are
 limited to the agent's work directory; external-directory access and web
 fetching are denied. The maintainer config denies all OpenCode tools by
-default, then allows `switch_*` tools for its read-only GitHub connection.
-Keep auto-approval disabled.
+default, then allows `switch_*` and a narrow Bash rule for `gh api repos/*`.
+The maintainer may read files only with the default-GET command
+`gh api repos/{project_repo}/contents/<path> -H "Accept: application/vnd.github.raw"`.
+It numbers the returned lines itself and cites `path:line`. It runs no other
+commands and never starts subagents or tasks. Switch's `gh` wrapper asks for a
+GitHub App installation token and passes it to `gh`; the server scopes that
+token to the maintainer's read grant for the selected repository. The session
+does not inherit the controller's `GH_TOKEN` or `GITHUB_TOKEN`. If the Switch
+token cannot be issued, the local wrapper can fall back to machine GitHub
+credentials. Stop if the wrapper reports that fallback. Keep auto-approval
+disabled.
 
 The templates and restrictions are guardrails, not a sandbox for hostile code.
 The volunteer agent can read and edit files in its work directory, and every

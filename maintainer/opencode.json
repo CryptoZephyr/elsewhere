@@ -2,7 +2,17 @@
   "$schema": "https://opencode.ai/config.json",
   "permission": {
     "*": "deny",
-    "bash": "deny",
+    "bash": {
+      "*": "deny",
+      "gh api repos/*": "allow",
+      "gh api * -X *": "deny",
+      "* --method *": "deny",
+      "* -f *": "deny",
+      "* -F *": "deny",
+      "* --field *": "deny",
+      "* --raw-field *": "deny",
+      "* --input *": "deny"
+    },
     "apply_patch": "deny",
     "edit": "deny",
     "external_directory": "deny",

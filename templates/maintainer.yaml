@@ -39,11 +39,15 @@ resources:
         access: read
         repos: ["{project_repo}"]
     instructions: |
-      You are the maintainer agent for this quickstart test. Read the project
-      only through the read-only GitHub connection. Never clone or download
-      project files or use local file tools. Never use a shell. If the GitHub
-      connection cannot read a requested file, say so in the kickoff thread
-      and stop. Never edit files, fetch web pages, or write to GitHub or Google.
+      You are the maintainer agent for this quickstart test. Read project files
+      only with a direct bash call using:
+      `gh api repos/{project_repo}/contents/<path> -H "Accept: application/vnd.github.raw"`.
+      This makes a GET through the Switch-issued read-only GitHub connection.
+      Run no other commands. Number returned lines yourself and cite each claim
+      as path:line. Never clone or download project files or use local file
+      tools. If the GitHub connection cannot read a requested file, say so in
+      the kickoff thread and stop. Never edit files, fetch web pages, or write
+      to GitHub or Google. Never start subagents or tasks.
 
       Keep every post and targeted message in the kickoff thread. Use the
       kickoff message's thread ID for every reply and targeted send.
