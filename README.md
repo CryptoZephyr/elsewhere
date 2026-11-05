@@ -1,131 +1,214 @@
 # Elsewhere
 
-Elsewhere tests your project's getting-started guide on your community's own
-machines, through their own locked-down agents in one Switch room.
+Elsewhere checks whether your project's getting-started guide works on other people's computers, using AI agents they lend you in one Switch chat room.
 
-Elsewhere is for project maintainers who want a small, reproducible test of
-their onboarding instructions across volunteer environments, without giving
-volunteers access to the maintainer's machine or write access to the source
-repository.
+Docs site: https://elsewhere-switch.vercel.app (mirror: https://cryptozephyr.github.io/elsewhere/) · Video: not available yet · Submission: not linked yet
 
-A maintainer publishes a Python quickstart. Two volunteers try it on their own
-machines: one on Python 3.9.6 gets a syntax error, while another on Python
-3.12.15 succeeds. Their locked-down agents report the command and result in one
-Switch room. The maintainer's agent checks the source through a read-only
-GitHub connection, cites the relevant lines, and offers labelled fixes. The
-maintainer human chooses one, and the volunteers rerun.
+![The recorded run: bob fails at step 4, carol passes](docs/images/greet6-02-results.png)
 
-The recorded demo used three owner accounts on one Mac.
+Built with: Switch (rooms, templates, managed agents, addressing policies, targeted messages, GitHub connection) · OpenCode · Python 3 standard library · Eleventy for the docs site
 
-Docs: https://elsewhere-switch.vercel.app (mirror: https://cryptozephyr.github.io/elsewhere/)
+Status: works end to end on one Mac with three owner accounts. Not yet tested on real Windows or Linux machines.
 
-## Editing the docs
+## The problem
 
-Edit `site/` and run `npm ci && npm run build`. The `docs/` directory is generated output.
+A getting-started guide usually works on the maintainer's own computer. New users on a different OS, or with a different Python or Node version, hit an error on step 4 and quietly give up. Testing the guide in one clean CI container doesn't catch this, because the failure only shows up on machines that aren't like yours.
+
+## What Elsewhere does
+
+People from your community lend an AI agent that runs on their own computer. Each agent follows your guide word for word and reports exactly what happened. Your agent puts everyone's results side by side, reads your code, explains what broke and for whom, and offers fixes. Nothing changes until you approve one in the chat.
+
+Here's a real run. bob has Python 3.9.6 and carol has Python 3.12.15. Both follow the same four steps. Step 4 fails for bob and passes for carol. The maintainer's agent finds that the sample uses `match`, which only exists in Python 3.10 and newer, and offers two fixes: A says "you need Python 3.10", and B changes the sample so it works on 3.9. The human replies "approve B", both volunteers rerun, and step 4 passes for both.
 
 ## How it works
 
-- A maintainer agent and a room are created from `templates/maintainer.yaml`.
-  The room instructions and kickoff establish the test thread. The maintainer
-  can read the selected GitHub repository and may address anyone in that room.
-- Each volunteer deploys `templates/volunteer.yaml`. Its `repo` field tells
-  the agent to clone this public repository into its work directory if needed.
-  The setup command clones it before any session so the root `opencode.json`
-  sets the volunteer's OpenCode restrictions.
-- Cross-owner volunteers get a room-scoped addressing rule for the maintainer
-  agent and its linked messaging identity. Solo volunteers use
-  `owner-agents` addressing because both agents have the same owner.
-- Volunteers report environment, command, expected result, and actual result.
-  They don't speculate about causes. Volunteers send every result the
-  maintainer needs, including step results, failure briefs, requested updates,
-  and rerun results, with `send_targeted_message` in the kickoff thread, and
-  also post each report in that thread. Before waiting on a volunteer, the
-  maintainer checks the thread context once for a report that may already be
-  posted. It reads the relevant source file through GitHub, groups results by
-  environment, and proposes labelled options. It waits for a clear human
-  choice before sending the approved fix instructions.
+1. You ask. Post "please test my quickstart" in a Switch room.
+2. Volunteers run it. Each volunteer's agent follows the guide on its own computer and reports each command and result.
+3. Your agent compares. It groups results by machine, reads the code it needs from GitHub and offers labelled fixes.
+4. You pick. You reply "approve B". The volunteers apply only that change locally, rerun and confirm.
 
-## Setup
+```mermaid
+flowchart LR
+    A["You post: please test my quickstart"] --> B["Volunteer agents run the guide on their own computers"]
+    B --> C["Your agent compares results and reads the code"]
+    C --> D{"Did every step pass?"}
+    D -- "yes" --> E["All-pass report"]
+    D -- "no" --> F["Fixes A and B, with tradeoffs"]
+    F --> G["You reply: approve B"]
+    G --> H["Volunteers apply B locally and rerun"]
+    H --> I["Final report in the thread"]
+```
 
-Use a Switch server with managed agents and a messaging bridge. Each agent
-owner needs a Switch account and OpenCode on the selected machine. The
-maintainer's account needs a GitHub read connection scoped to the project
-repository. Run these commands from a local clone of this public repository.
+## Why Switch matters
 
-The script uses Gateway password login, which must be enabled on the server.
-It reads the password from
-`SWITCH_GATEWAY_PASSWORD` or prompts without echoing it, and keeps the
-`switch_auth` cookie in memory. Set `SWITCH_GATEWAY_API` when the server is not
-the local HTTPS default. For volunteers on other machines, set it to a
-Gateway URL they can reach. The printed invite line includes that URL. Gateway
-URLs must end in `/gateway`, and non-local URLs must use HTTPS. Set
-`SWITCH_GATEWAY_EMAIL` to skip the email prompt. No password or cookie is
-written to disk. For a private or self-signed Gateway, use `SWITCH_CA_FILE` or `--ca-file PATH` with a locally available CA certificate. Add `--dry-run` to any command to print its planned requests without calling the API or changing the workdirs.
+Elsewhere only works because agents owned by different people, on different computers, can work together in one room without getting access to each other's machines or accounts.
 
-### Solo (one person, about 5 minutes)
+- Rooms and templates. `templates/maintainer.yaml` creates the room and the maintainer agent. `templates/volunteer.yaml` adds a volunteer agent to that room.
+- Separate owners and controllers. Each person's agent runs on their own controller under their own account.
+- Addressing policies. Switch blocks one owner's agent from messaging another owner's agent by default. The setup command adds one exception, in this room only, so a volunteer can reach the maintainer agent.
+- Targeted messages. Volunteers send their results straight to the maintainer agent with `send_targeted_message` and also post them in the thread.
+- Managed GitHub connection. The maintainer reads project files through Switch's read-only GitHub connection.
+- Human approval in chat. The maintainer asks for a clear choice and acts only after the human approves one option.
 
-Run one command from the repository root:
+## Try it
+
+The fastest path is solo mode, where one person plays every part. It takes about 5 minutes.
+
+You need a Switch server you can sign in to with a password, OpenCode on the computer that runs the agents, a read-only GitHub connection in Switch for the repo the agent should read, and a clone of this repo.
+
+```sh
+git clone https://github.com/CryptoZephyr/elsewhere.git
+cd elsewhere
+scripts/elsewhere solo --project my-project --repo OWNER/NAME
+```
+
+Wait for `ready`, then paste the printed message into the new room's first thread. Watch the agents work, and reply "approve A" or "approve B" if something fails.
+
+If your Python is 3.10 or newer, every step passes and you'll get an all-pass report instead of a fix. The screenshots below show what a failure looks like.
+
+## Demo
+
+The demo video is not available yet. These screenshots come from the recorded three-owner run on 2026-11-05, which took 2m33s from request to final report.
+
+| | |
+| --- | --- |
+| ![The request in the room](docs/images/greet6-01-request.png) | ![bob fails, carol passes](docs/images/greet6-02-results.png) |
+| The test starts in the chat room. | bob fails at step 4. carol passes. |
+| ![The agent offers options A and B](docs/images/greet6-03-options.png) | ![The human approves B](docs/images/greet6-04-approval.png) |
+| The agent explains the two options. | The human chooses option B. |
+| ![Both reruns pass](docs/images/greet6-05-reruns.png) | |
+| Both volunteers try again and pass. | |
+
+```mermaid
+sequenceDiagram
+    actor Human
+    participant M as Maintainer agent
+    participant B as bob's agent (Python 3.9.6)
+    participant C as carol's agent (Python 3.12.15)
+    participant GH as GitHub (read-only)
+    Human->>M: Please test the quickstart
+    M->>B: Run steps 1 to 4
+    M->>C: Run steps 1 to 4
+    C-->>M: All four steps passed
+    B-->>M: Step 4 failed, SyntaxError
+    M->>GH: Read sample/hello.py
+    M->>Human: Options A and B
+    Human->>M: ok go ahead with the fix
+    M->>Human: Which option?
+    Human->>M: approve B
+    M->>B: Apply B locally and rerun
+    M->>C: Apply B locally and rerun
+    B-->>M: hello Ada
+    C-->>M: hello Ada
+    M->>Human: Final report
+```
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Human["Human maintainer"] -- "request and approval" --> Room
+    subgraph Switch["Switch server"]
+        Room["Room and kickoff thread"]
+        Policy["Addressing policy: one exception, this room only"]
+        GHConn["GitHub connection, read-only"]
+    end
+    Vols["Volunteer agents on their own computers, locked by opencode.json"] -- "targeted messages" --> Policy
+    Policy --> M["Maintainer agent, locked by maintainer/opencode.json"]
+    Vols <-- "reports and reruns" --> Room
+    M <-- "options and final report" --> Room
+    M -- "gh api GET" --> GHConn
+    GHConn --> Repo["Project repo on GitHub"]
+```
+
+The `scripts/elsewhere` command uses only the Python standard library. It signs in to the Switch Gateway, deploys a template, places the right OpenCode config in the agent's empty folder before any session can start, checks that config with `opencode debug config --pure`, confirms no session exists yet, and prints `ready`. It never posts messages or starts sessions itself.
+
+## Integration details
+
+| Technology | How we use it | Why it matters |
+| --- | --- | --- |
+| Switch templates | `templates/maintainer.yaml` creates the room and maintainer. `templates/volunteer.yaml` adds a volunteer. | One command sets up each role. |
+| Switch addressing policies | The volunteer keeps its owner rule and gets one room-scoped exception for the maintainer agent and its linked messaging identity. Solo volunteers use `owner-agents`. | Agents from different owners can talk, in this room only. |
+| Switch targeted messages | Volunteers send every result to the maintainer with `send_targeted_message`. | Results reach the maintainer even when a chat reply wouldn't. |
+| Switch GitHub connection | The maintainer reads files with `gh api repos/{project_repo}/contents/<path>`. | It can cite your code without being able to change it. |
+| OpenCode permissions | `opencode.json` for volunteers and `maintainer/opencode.json` for the maintainer. | Agents can only run what the guide needs. |
+| OpenCode free model | `opencode/big-pickle` by default, changeable with `--model`. | The whole run costs nothing. |
+
+## Evidence
+
+- Three-owner run: three owner accounts and three controllers on one Mac. Setup took 3 to 5 seconds per person, and the run took 2m33s from request to final report.
+- Solo run: setup took 6.6 seconds, and setup to final report took 5m03s.
+- In both runs, Python 3.9.6 failed at step 4, the human's vague approval got a clarifying question, "approve B" was carried out exactly, and the reruns printed `hello Ada`.
+- No GitHub or Google writes happened in either run.
+
+## What we tested
+
+| Attempt | Expected behavior | Result |
+| --- | --- | --- |
+| A volunteer runs `sw_vers`, which isn't in the guide | Blocked before it runs | Denied by OpenCode permissions before it ran |
+| The human writes "ok go ahead with the fix" | The agent asks which option | It asked for A or B and waited |
+| The human writes "approve B" | Only fix B is sent | Both volunteers applied B locally and reran |
+| The guide fails on Python 3.9.6 only | Results grouped by machine | The agent cited `sample/hello.py` and compared bob with carol |
+| A session starts before the config is in place | Setup prevents it | The kickoff is neutral and config is placed before any session |
+
+## Repository structure
+
+```text
+scripts/elsewhere          setup command for solo, maintainer and volunteer
+templates/maintainer.yaml  room and maintainer agent template
+templates/volunteer.yaml   volunteer agent template
+maintainer/opencode.json   maintainer lockdown config
+opencode.json              volunteer lockdown config
+sample/                    the sample project and its quickstart
+site/                      docs site source (Eleventy)
+docs/                      generated docs site, served by GitHub Pages
+```
+
+## Run locally
+
+### Solo
 
 ```sh
 scripts/elsewhere solo --project my-project --repo OWNER/NAME
 ```
 
-The command creates a maintainer and one volunteer owned by the same account,
-places the maintainer config, clones this repository into the volunteer
-workdir, checks both effective OpenCode configs, and confirms that neither
-agent has an OpenCode session. The volunteer uses `owner-agents` addressing,
-so no addressing-policy update is needed. Paste the printed request message
-into the room's kickoff thread. It mentions both agents.
-Pass `--machine NAME` to place both agents on a specific controller.
+The command creates a maintainer and one volunteer owned by the same account, places the maintainer config, clones this repository into the volunteer workdir, checks both effective OpenCode configs and confirms that neither agent has a session. Pass `--machine NAME` to place both agents on a specific controller.
 
-For the bundled example, the result depends on the judge's Python version.
-macOS system Python 3.9.6 fails at the pattern-matching step. Python 3.10 or
-newer passes it.
+### With real volunteers
 
-### Real setup (maintainer plus volunteers on their own machines)
-
-The maintainer runs one command:
+The maintainer runs:
 
 ```sh
 scripts/elsewhere maintainer --project my-project --repo OWNER/NAME
 ```
 
-The command deploys the maintainer and room, places the separate
-`maintainer/opencode.json` in the empty maintainer workdir, checks its
-effective permissions, and confirms there is no OpenCode session. It prints
-the room name, an invite line, and a request message to paste into the kickoff
-thread after volunteers are ready. The kickoff itself is neutral, so no agent
-starts before its config is in place. If the account has multiple linked
-messaging identities, the command asks which one is used by the room. The
-invite line includes the Gateway URL volunteers need.
-
-Each volunteer uses one command on their own machine, with a unique lowercase
-handle:
+It prints the room name, an invite line, a join code and the request message to paste once volunteers are ready. Each volunteer runs one command on their own computer, with a unique lowercase handle:
 
 ```sh
 scripts/elsewhere volunteer --join JOIN_CODE --handle volunteer-1
 ```
 
-The command deploys the volunteer into the room, clones this public repository
-into the empty workdir, checks the effective OpenCode permissions and zero
-sessions, then adds only the maintainer agent and its linked messaging
-identity to the volunteer's addressing policy for that room. The join code
-contains only the project slug and Switch IDs. It is setup data, not an access
-credential. Volunteers must sign in to an account that can access the room.
-Mention the maintainer in the kickoff request and in every later clarification
-or approval. Keep the full exchange in that thread.
+The join code holds only the project slug and Switch IDs. It isn't an access credential, and volunteers still sign in to an account that can access the room. Mention the maintainer agent in the request and in every later reply, and keep the whole exchange in that thread.
 
-The maintainer command defaults to `opencode/big-pickle`; use `--model` to
-select another model. Use `--machine` to select a controller by name.
-Volunteers can also use `--machine`. The maintainer's workdir is kept separate
-from the project checkout and must contain only `opencode.json`.
+### Connecting to your Switch server
 
-OpenCode reads the root `opencode.json` from the agent's workdir, including
-when a session runs from `sample/`. The script checks the effective
-permissions with `opencode debug config --pure` and verifies there is no
-session before it prints `ready`. It never posts messages or starts sessions.
+The script uses Gateway password login, which must be enabled on the server. It reads the password from `SWITCH_GATEWAY_PASSWORD` or asks for it without echoing, and keeps the session cookie in memory only. Nothing is written to disk.
 
-## Safety and limits
+| Setting | What it does |
+| --- | --- |
+| `SWITCH_GATEWAY_API` | Gateway URL when the server isn't the local HTTPS default. Must end in `/gateway`. Remote URLs must use HTTPS. |
+| `SWITCH_GATEWAY_EMAIL` | Skips the email prompt. |
+| `SWITCH_GATEWAY_PASSWORD` | Skips the password prompt. |
+| `SWITCH_CA_FILE` or `--ca-file PATH` | Trusted CA certificate for a private or self-signed Gateway. TLS verification stays on. |
+| `--model MODEL` | Model for the agents. Defaults to `opencode/big-pickle`. |
+| `--machine NAME` | Controller to place the agent on. |
+| `--dry-run` | Prints the planned requests without calling the API or changing workdirs. |
+
+### Editing the docs site
+
+Edit `site/` and run `npm ci && npm run build`. The `docs/` directory is generated output.
+
+## Security model
 
 Volunteers have a Bash deny rule with only the patterns `mkdir *`, `cd *`,
 `python3 *`, `cat *`, `ls`, `pwd`, `python3 --version`, and `git clone *`
@@ -156,3 +239,21 @@ Elsewhere does not guarantee that a model will respond, that every platform
 delivers messages in the same way, or that a quickstart result generalizes
 beyond the environments tested. No agent may write to the project repository;
 the maintainer human applies any approved source change separately.
+
+## Limitations
+
+- The three test environments ran on one Mac and differed by Python version. No real Windows or Linux machine and no remote enrollment have been tested.
+- Only the bundled four-step sample guide has been tested. A longer real-world guide hasn't been run yet.
+- Fixes are suggestions. Elsewhere doesn't open pull requests, and a human applies any project change.
+- The guardrails aren't a sandbox for hostile code.
+- Free model availability and limits can change.
+
+## Roadmap
+
+- Run the same test with a volunteer on a real Linux or Windows machine joining over the internet.
+- Run Elsewhere against a real open-source project's quickstart.
+- Let the maintainer turn an approved fix into a draft pull request, still behind human approval.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
