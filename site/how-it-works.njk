@@ -1,0 +1,117 @@
+---
+layout: base.njk
+title: How it works | Elsewhere
+permalink: how-it-works.html
+---
+<div class="page-title">
+  <h1>How it works</h1>
+</div>
+<article class="notebook">
+  <section class="notebook-entry" aria-labelledby="roles">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 01</p>
+      <p class="margin-note">Separate owners, one room</p>
+      <p class="entry-mobile-line">ENTRY 01 · ROLES</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 01 · ROLES</p>
+      <h2 id="roles">Roles</h2>
+      <ul>
+        <li>The human owns the project access, posts the request, and approves one labelled option in chat.</li>
+        <li>The maintainer agent reads the selected repo through a read-only GitHub connection, groups results by environment, and proposes options when a test fails.</li>
+        <li>Each volunteer runs the quickstart on their own machine and reports the command and result.</li>
+        <li>Switch holds the room, applies message-addressing rules, and delivers targeted messages between agents.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="notebook-entry" aria-labelledby="flow">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 02</p>
+      <p class="margin-note">Config before kickoff</p>
+      <p class="entry-mobile-line">ENTRY 02 · FLOW</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 02 · FLOW</p>
+      <h2 id="flow">Flow</h2>
+      <ol>
+        <li>The maintainer command creates a room and maintainer agent from a template. The setup script places the maintainer's OpenCode config in its workdir before any request is posted.</li>
+        <li>Each volunteer joins from their own machine. The script places the volunteer config and clones this public repo before a session starts.</li>
+        <li>The human pastes the printed request into the kickoff thread and @mentions the maintainer.</li>
+        <li>Volunteers follow the numbered steps, then send each requested result to the maintainer with a targeted message and post it in the kickoff thread.</li>
+        <li>Before waiting for a volunteer, the maintainer reads the thread context once in case the result is already there. It groups the results by environment and reads only the source files needed to explain a failure.</li>
+        <li>If everyone passes, the maintainer posts a short all-pass report and doesn't ask for approval. If a step fails, it cites the source and offers labelled options with their tradeoffs and exact changes.</li>
+        <li>The human approves one option in chat. The maintainer sends only that local change to the volunteers who need to rerun. It posts a final report in the thread. No agent changes the project repo.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="notebook-entry" aria-labelledby="safety-model">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 03</p>
+      <p class="margin-note">Bash denied by default</p>
+      <p class="entry-mobile-line">ENTRY 03 · SAFETY MODEL</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 03 · SAFETY MODEL</p>
+      <h2 id="safety-model">Safety model</h2>
+      <p>Volunteers use the root opencode.json from this repo. Bash is denied by default. These are the allowed patterns:</p>
+      <div class="spec-block" aria-label="Volunteer Bash allowlist">
+        <pre class="command-block"><code>mkdir *
+cd *
+python3 *
+cat *
+ls
+pwd
+python3 --version
+git clone *</code></pre>
+      </div>
+      <p>OpenCode edits stay inside the volunteer workdir. Access to external directories and web fetching are denied. The setup script clones the public repo into that workdir before any session starts.</p>
+      <p>Cross-owner messages are blocked by default. A volunteer keeps its owner rule and gets one room-scoped exception for the maintainer agent and its linked messaging identity. In Solo, both agents share an owner and use owner-agents addressing.</p>
+      <p>The maintainer config denies OpenCode tools by default, then allows Switch tools and a narrow Bash rule for <code>gh api repos/*</code> with write flags denied. It reads project files only with GET requests like this:</p>
+      <pre class="command-block"><code>gh api repos/{project_repo}/contents/&lt;path&gt; -H "Accept: application/vnd.github.raw"</code></pre>
+      <p>The maintainer numbers the returned lines and cites full repo-relative paths. It doesn't clone or download source files, run other commands, start subagents, or write to GitHub or Google. Its workdir contains only opencode.json.</p>
+      <p>The human must approve a labelled option before the maintainer sends a fix. The fix stays in a volunteer workdir. The human applies any project change separately.</p>
+      <p>These guardrails aren't a sandbox for hostile code. Every allowed Python command can run arbitrary Python code. Review the quickstart before inviting volunteers and use a fresh workdir.</p>
+    </div>
+  </section>
+
+  <section class="notebook-entry" aria-labelledby="local-results">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 04</p>
+      <p class="margin-note">Three owners, one Mac</p>
+      <p class="entry-mobile-line">ENTRY 04 · LOCAL RUN RESULTS</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 04 · LOCAL RUN RESULTS</p>
+      <h2 id="local-results">Local run results</h2>
+      <p>These timings came from local runs. A three-owner run took 2m33s from request to final report. An earlier three-owner run took 3m09s from request to final report. Solo setup took 6.6s, and setup to final report took 5m03s.</p>
+      <p>In the three-owner run, bob used Python 3.9.6 and initially failed step 4. carol used Python 3.12.15 and passed. In the solo run, the volunteer used Python 3.9.6 and initially failed. The approved local change let the rerun pass.</p>
+    </div>
+  </section>
+
+  <section class="notebook-entry" aria-labelledby="limitations">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 05</p>
+      <p class="margin-note">Guardrails are not a sandbox</p>
+      <p class="entry-mobile-line">ENTRY 05 · LIMITATIONS</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 05 · LIMITATIONS</p>
+      <h2 id="limitations">Limitations</h2>
+      <ul>
+        <li>The three test environments ran on one Mac and differed by Python version.</li>
+        <li>No real Windows or Linux machine and no remote enrollment were tested.</li>
+        <li>The guardrails are not a sandbox.</li>
+        <li>Free model availability and limits can change.</li>
+        <li>Fixes are suggestions, not pull requests. A human applies any project change.</li>
+      </ul>
+      <p><a href="setup.html">Read the setup guide.</a></p>
+    </div>
+  </section>
+</article>

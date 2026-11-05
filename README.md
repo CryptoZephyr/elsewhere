@@ -19,6 +19,10 @@ The recorded demo used three owner accounts on one Mac.
 
 Docs: https://elsewhere-switch.vercel.app (mirror: https://cryptozephyr.github.io/elsewhere/)
 
+## Editing the docs
+
+Edit `site/` and run `npm ci && npm run build`. The `docs/` directory is generated output.
+
 ## How it works
 
 - A maintainer agent and a room are created from `templates/maintainer.yaml`.

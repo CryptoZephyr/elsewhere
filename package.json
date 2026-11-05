@@ -1,0 +1,11 @@
+{
+  "name": "elsewhere-docs",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf docs && eleventy"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "3.1.8"
+  }
+}

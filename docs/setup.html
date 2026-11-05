@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Setup | Elsewhere</title>
   <link rel="icon" type="image/svg+xml" href="images/logo.svg">
+  <link rel="preload" href="fonts/public-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/dm-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,76 +24,111 @@
     </header>
     <main>
       <div class="page-title">
-        <h1>Setup</h1>
-      </div>
+  <h1>Setup</h1>
+</div>
+<article class="notebook">
+  <section class="notebook-entry" aria-labelledby="what-you-need">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 01</p>
+      <p class="margin-note">Managed agents and a messaging bridge</p>
+      <p class="entry-mobile-line">ENTRY 01 · PREREQUISITES</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 01 · PREREQUISITES</p>
+      <h2 id="what-you-need">What you need</h2>
+      <p>A Switch server with managed agents and a messaging bridge. OpenCode on each machine. A read-only GitHub connection for the maintainer, scoped to the project repo.</p>
+      <p>Run the commands from a local clone of this public repo. Gateway password login must be enabled on the server.</p>
+    </div>
+  </section>
 
-      <section class="editorial-section">
-        <h2>What you need</h2>
-        <div class="section-body">
-          <p>A Switch server with managed agents and a messaging bridge. OpenCode on each machine. A read-only GitHub connection for the maintainer, scoped to the project repo.</p>
-          <p>Run the commands from a local clone of this public repo. Gateway password login must be enabled on the server.</p>
+  <section class="notebook-entry" aria-labelledby="gateway-login">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 02</p>
+      <p class="margin-note">TLS verification stays on</p>
+      <p class="entry-mobile-line">ENTRY 02 · GATEWAY LOGIN</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 02 · CONNECTION</p>
+      <h2 id="gateway-login">Gateway login</h2>
+      <p>The default Gateway is the local HTTPS server.</p>
+      <dl class="leader-list">
+        <div class="leader-row">
+          <dt><span class="leader-label"><code>SWITCH_GATEWAY_API</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Set <code>SWITCH_GATEWAY_API</code> when the server isn't at that address. A Gateway URL must end in <code>/gateway</code>. Remote URLs must use HTTPS.</dd>
         </div>
-      </section>
-
-      <section class="editorial-section">
-        <h2>Gateway login</h2>
-        <div class="section-body">
-          <p>The default Gateway is the local HTTPS server.</p>
-          <dl class="leader-list">
-            <div class="leader-row">
-              <dt><span class="leader-label"><code>SWITCH_GATEWAY_API</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>Set <code>SWITCH_GATEWAY_API</code> when the server isn't at that address. A Gateway URL must end in <code>/gateway</code>. Remote URLs must use HTTPS.</dd>
-            </div>
-            <div class="leader-row">
-              <dt><span class="leader-label"><code>SWITCH_GATEWAY_EMAIL</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>Set <code>SWITCH_GATEWAY_EMAIL</code> to skip the email prompt.</dd>
-            </div>
-            <div class="leader-row">
-              <dt><span class="leader-label"><code>SWITCH_GATEWAY_PASSWORD</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>Set <code>SWITCH_GATEWAY_PASSWORD</code> in the environment or enter it at the hidden prompt. The password and session cookie aren't written to disk.</dd>
-            </div>
-            <div class="leader-row">
-              <dt><span class="leader-label"><code>SWITCH_CA_FILE</code> / <code>--ca-file PATH</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>For a private or self-signed Gateway, set <code>SWITCH_CA_FILE</code> or pass <code>--ca-file PATH</code> with a trusted CA certificate. TLS verification stays on.</dd>
-            </div>
-          </dl>
-          <p>During real setup, the maintainer command uses <code>opencode/big-pickle</code> by default.</p>
-          <dl class="leader-list">
-            <div class="leader-row">
-              <dt><span class="leader-label"><code>--model MODEL</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>Pass <code>--model MODEL</code> to select another model.</dd>
-            </div>
-            <div class="leader-row">
-              <dt><span class="leader-label"><code>--machine NAME</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>Use <code>--machine NAME</code> to choose a controller.</dd>
-            </div>
-            <div class="leader-row">
-              <dt><span class="leader-label"><code>--dry-run</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>Add <code>--dry-run</code> to any command to print planned requests without calling the API or changing workdirs.</dd>
-            </div>
-          </dl>
+        <div class="leader-row">
+          <dt><span class="leader-label"><code>SWITCH_GATEWAY_EMAIL</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Set <code>SWITCH_GATEWAY_EMAIL</code> to skip the email prompt.</dd>
         </div>
-      </section>
+        <div class="leader-row">
+          <dt><span class="leader-label"><code>SWITCH_GATEWAY_PASSWORD</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Set <code>SWITCH_GATEWAY_PASSWORD</code> in the environment or enter it at the hidden prompt. The password and session cookie aren't written to disk.</dd>
+        </div>
+        <div class="leader-row">
+          <dt><span class="leader-label"><code>SWITCH_CA_FILE</code> / <code>--ca-file PATH</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>For a private or self-signed Gateway, set <code>SWITCH_CA_FILE</code> or pass <code>--ca-file PATH</code> with a trusted CA certificate. TLS verification stays on.</dd>
+        </div>
+      </dl>
+      <p>During real setup, the maintainer command uses <code>opencode/big-pickle</code> by default.</p>
+      <dl class="leader-list">
+        <div class="leader-row">
+          <dt><span class="leader-label"><code>--model MODEL</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Pass <code>--model MODEL</code> to select another model.</dd>
+        </div>
+        <div class="leader-row">
+          <dt><span class="leader-label"><code>--machine NAME</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Use <code>--machine NAME</code> to choose a controller.</dd>
+        </div>
+        <div class="leader-row">
+          <dt><span class="leader-label"><code>--dry-run</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Add <code>--dry-run</code> to any command to print planned requests without calling the API or changing workdirs.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
 
-      <section class="editorial-section">
-        <h2>Solo (one person, about 5 minutes)</h2>
-        <div class="section-body">
-          <p>Use this mode when one person owns both agents. It deploys a maintainer and one volunteer, checks both configs, and uses owner-agents addressing without a policy update.</p>
+  <section class="notebook-entry" aria-labelledby="solo">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 03</p>
+      <p class="margin-note">Python 3.9.6 fails at the sample step</p>
+      <p class="entry-mobile-line">ENTRY 03 · PROCEDURE 01 · SOLO</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 03 · PROCEDURE 01 · SOLO</p>
+      <h2 id="solo">Solo (one person, about 5 minutes)</h2>
+      <p>Use this mode when one person owns both agents. It deploys a maintainer and one volunteer, checks both configs, and uses owner-agents addressing without a policy update.</p>
+      <ol class="procedure-steps">
+        <li>
           <pre class="command-block"><code>scripts/elsewhere solo --project my-project --repo OWNER/NAME</code></pre>
-          <dl class="leader-list">
-            <div class="leader-row">
-              <dt><span class="leader-label"><code>--machine NAME</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>Pass <code>--machine NAME</code> to place both agents on a specific controller.</dd>
-            </div>
-          </dl>
+        </li>
+        <li>
+          <p>Pass <code>--machine NAME</code> to place both agents on a specific controller.</p>
+        </li>
+        <li>
           <p>For the bundled sample, macOS system Python 3.9.6 fails at the pattern-matching step. Python 3.10 or newer passes.</p>
+        </li>
+        <li>
           <p>Paste the printed request into the kickoff thread after setup is ready. It mentions both agents.</p>
-        </div>
-      </section>
+        </li>
+      </ol>
+    </div>
+  </section>
 
-      <section class="editorial-section">
-        <h2>Real setup</h2>
-        <div class="section-body">
+  <section class="notebook-entry" aria-labelledby="real-setup">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 04</p>
+      <p class="margin-note">Config before any session</p>
+      <p class="entry-mobile-line">ENTRY 04 · PROCEDURE 02 · REAL SETUP</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 04 · PROCEDURE 02 · REAL SETUP</p>
+      <h2 id="real-setup">Real setup</h2>
+      <ol class="procedure-steps">
+        <li>
           <p>The maintainer deploys the room and its agent. The command prints a room name, an invite line, and a request message for the kickoff thread.</p>
           <pre class="command-block"><code>scripts/elsewhere maintainer --project my-project --repo OWNER/NAME</code></pre>
           <dl class="leader-list">
@@ -101,6 +138,8 @@
             </div>
           </dl>
           <p>The maintainer workdir is separate from the project checkout and must contain only <code>opencode.json</code>.</p>
+        </li>
+        <li>
           <p>Each volunteer runs one command on their own machine with a unique lowercase handle.</p>
           <pre class="command-block"><code>scripts/elsewhere volunteer --join JOIN_CODE --handle volunteer-1</code></pre>
           <dl class="leader-list">
@@ -111,35 +150,52 @@
           </dl>
           <p>The command clones this public repo into the empty workdir before any session, checks the effective OpenCode permissions, and confirms there isn't an existing session. It then adds only the maintainer agent and linked messaging identity to the room's addressing policy.</p>
           <p>The join code contains the project slug and Switch IDs. It isn't an access credential. A volunteer must sign in to an account that can access the room.</p>
-        </div>
-      </section>
+        </li>
+      </ol>
+    </div>
+  </section>
 
-      <section class="editorial-section">
-        <h2>Running a test</h2>
-        <div class="section-body">
-          <p>After everyone is ready, paste the printed request into the kickoff thread. Keep the exact wording and always @mention the maintainer. Keep reports, clarifications, approvals, and rerun results in that thread. Mention the maintainer in every human reply that asks a question or approves an option.</p>
-          <p>The printed request names <code>sample/QUICKSTART.md</code> and <code>sample/hello.py</code>. The maintainer may read those files without asking and must ask before reading any other source path. Volunteers send every requested result to the maintainer with a targeted message and also post it in the thread.</p>
-        </div>
-      </section>
+  <section class="notebook-entry" aria-labelledby="running-test">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 05</p>
+      <p class="margin-note">Keep the exchange in the thread</p>
+      <p class="entry-mobile-line">ENTRY 05 · RUNNING A TEST</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 05 · RUNNING A TEST</p>
+      <h2 id="running-test">Running a test</h2>
+      <p>After everyone is ready, paste the printed request into the kickoff thread. Keep the exact wording and always @mention the maintainer. Keep reports, clarifications, approvals, and rerun results in that thread. Mention the maintainer in every human reply that asks a question or approves an option.</p>
+      <p>The printed request names <code>sample/QUICKSTART.md</code> and <code>sample/hello.py</code>. The maintainer may read those files without asking and must ask before reading any other source path. Volunteers send every requested result to the maintainer with a targeted message and also post it in the thread.</p>
+    </div>
+  </section>
 
-      <section class="editorial-section">
-        <h2>Troubleshooting</h2>
-        <div class="section-body troubleshooting">
-          <h3>Certificate errors</h3>
-          <dl class="leader-list">
-            <div class="leader-row">
-              <dt><span class="leader-label">Certificate</span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>Set <code>SWITCH_CA_FILE</code> or pass <code>--ca-file PATH</code> with the trusted CA certificate. Don't turn off TLS verification.</dd>
-            </div>
-          </dl>
-          <h3>A reply didn't reach the maintainer</h3>
-          <p>Replies without an @mention may not be delivered to the agent. Mention the maintainer in each approval or clarification. Volunteers should send results with a targeted message as well as posting in the thread.</p>
-          <h3>A session started before config was ready</h3>
-          <p>Don't use a session that started before the workdir config was placed. Redeploy with a new project slug, then post the kickoff request after setup is ready.</p>
+  <section class="notebook-entry" aria-labelledby="troubleshooting">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 06</p>
+      <p class="margin-note">Redeploy with a fresh slug</p>
+      <p class="entry-mobile-line">ENTRY 06 · TROUBLESHOOTING</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content troubleshooting">
+      <p class="entry-kicker">ENTRY 06 · TROUBLESHOOTING</p>
+      <h2 id="troubleshooting">Troubleshooting</h2>
+      <h3>Certificate errors</h3>
+      <dl class="leader-list">
+        <div class="leader-row">
+          <dt><span class="leader-label">Certificate</span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Set <code>SWITCH_CA_FILE</code> or pass <code>--ca-file PATH</code> with the trusted CA certificate. Don't turn off TLS verification.</dd>
         </div>
-      </section>
+      </dl>
+      <h3>A reply didn't reach the maintainer</h3>
+      <p>Replies without an @mention may not be delivered to the agent. Mention the maintainer in each approval or clarification. Volunteers should send results with a targeted message as well as posting in the thread.</p>
+      <h3>A session started before config was ready</h3>
+      <p>Don't use a session that started before the workdir config was placed. Redeploy with a new project slug, then post the kickoff request after setup is ready.</p>
+      <p><a href="how-it-works.html">Read how the workflow works.</a></p>
+    </div>
+  </section>
+</article>
 
-      <p class="page-end"><a href="how-it-works.html">Read how the workflow works.</a></p>
     </main>
     <footer class="site-footer">
       <a class="brand brand--footer" href="index.html">

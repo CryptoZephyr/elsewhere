@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Elsewhere</title>
   <link rel="icon" type="image/svg+xml" href="images/logo.svg">
+  <link rel="preload" href="fonts/public-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/dm-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,255 +23,246 @@
       </nav>
     </header>
     <main>
-      <div class="intro">
-        <h1>Elsewhere</h1>
-        <p>Community members lend their own locked-down AI agents to test a project's getting-started guide on their own machines, in one Switch room.</p>
+      <article class="notebook">
+  <section class="notebook-entry" aria-labelledby="project-note">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 01</p>
+      <p class="margin-note">Community quickstart testing</p>
+      <p class="entry-mobile-line">ENTRY 01 · PROJECT NOTE</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 01 · PROJECT NOTE</p>
+      <h1 id="project-note">Elsewhere</h1>
+      <p class="lead">Community members lend their own locked-down AI agents to test a project's getting-started guide on their own machines, in one Switch room.</p>
+    </div>
+  </section>
+
+  <section class="notebook-entry" aria-labelledby="who-its-for">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 02</p>
+      <p class="margin-note">For project maintainers</p>
+      <p class="entry-mobile-line">ENTRY 02 · AUDIENCE</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 02 · AUDIENCE</p>
+      <h2 id="who-its-for">Who it's for</h2>
+      <p>It's for maintainers whose getting-started guide works on their machine but breaks on users' machines.</p>
+    </div>
+  </section>
+
+  <section class="notebook-entry" aria-labelledby="greet6-run">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 03</p>
+      <p class="entry-date">2026-11-05</p>
+      <p class="margin-note">Three owners, one Mac</p>
+      <p class="margin-note">sw_vers denied before it ran</p>
+      <p class="entry-mobile-line">ENTRY 03 · 2026-11-05 · sw_vers denied</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 03 · 2026-11-05 · 07:33:07 to 07:35:40 UTC · GREET6 RUN</p>
+      <h2 id="greet6-run">An example run</h2>
+      <p>This is a real run from three owner accounts on one Mac. The human asked the room to test the bundled quickstart. bob ran it on Python 3.9.6 and got a SyntaxError at step 4. carol ran it on Python 3.12.15 and passed.</p>
+      <p>The maintainer grouped the results, cited <code>sample/QUICKSTART.md:24</code> and <code>sample/hello.py:3</code>, then offered options A and B. When the human said “ok go ahead with the fix”, the maintainer asked which option. The human replied “approve B”. The agent sent both volunteers a local if/else change. Both reran and passed, and the final report said the repository wasn't changed.</p>
+
+      <h3>bob's environment</h3>
+      <dl class="leader-list spec-list">
+        <div class="leader-row">
+          <dt><span class="leader-label">Volunteer</span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>bob</dd>
+        </div>
+        <div class="leader-row">
+          <dt><span class="leader-label">OS</span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>macOS 26.6.2 arm64</dd>
+        </div>
+        <div class="leader-row">
+          <dt><span class="leader-label">Python</span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>3.9.6</dd>
+        </div>
+        <div class="leader-row">
+          <dt><span class="leader-label">Machine</span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>one Mac, own owner account</dd>
+        </div>
+      </dl>
+
+      <div class="table-wrap">
+        <table class="run-table">
+          <colgroup>
+            <col class="run-step-column">
+            <col class="run-command-column">
+            <col class="run-expected-column">
+            <col class="run-observed-column">
+            <col class="run-result-column">
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Step</th>
+              <th scope="col">Command run</th>
+              <th scope="col">Expected</th>
+              <th scope="col">Observed</th>
+              <th scope="col">Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">STEP 1</th>
+              <td data-label="Command run"><code>python3 --version</code></td>
+              <td data-label="Expected">prints the Python version</td>
+              <td data-label="Observed"><code>Python 3.9.6</code></td>
+              <td data-label="Result"><span class="status status--passed">PASSED</span></td>
+            </tr>
+            <tr>
+              <th scope="row">STEP 2</th>
+              <td data-label="Command run"><code>git clone https://github.com/CryptoZephyr/elsewhere.git elsewhere-checkout</code></td>
+              <td data-label="Expected">clone succeeds</td>
+              <td data-label="Observed"><code>Cloning into 'elsewhere-checkout'...</code></td>
+              <td data-label="Result"><span class="status status--passed">PASSED</span></td>
+            </tr>
+            <tr>
+              <th scope="row">STEP 3</th>
+              <td data-label="Command run"><code>cd elsewhere-checkout/sample</code></td>
+              <td data-label="Expected">succeeds</td>
+              <td data-label="Observed">no output</td>
+              <td data-label="Result"><span class="status status--passed">PASSED</span></td>
+            </tr>
+            <tr>
+              <th scope="row">STEP 4</th>
+              <td data-label="Command run"><code>python3 hello.py greet Ada</code></td>
+              <td data-label="Expected"><code>hello Ada</code></td>
+              <td data-label="Observed"><code>SyntaxError: invalid syntax</code> at <code>sample/hello.py</code> line 3 (<code>match sys.argv[1:]:</code>)</td>
+              <td data-label="Result"><span class="status status--failed">FAILED</span></td>
+            </tr>
+            <tr>
+              <th scope="row">OUTSIDE THE GUIDE</th>
+              <td data-label="Command run"><code>sw_vers</code></td>
+              <td data-label="Expected">not allowed by the lockdown</td>
+              <td data-label="Observed">denied by OpenCode permissions before it ran</td>
+              <td data-label="Result"><span class="status status--blocked">BLOCKED</span></td>
+            </tr>
+            <tr>
+              <th scope="row">RERUN STEP 4<br>(after option B, local change only)</th>
+              <td data-label="Command run"><code>python3 hello.py greet Ada</code></td>
+              <td data-label="Expected"><code>hello Ada</code></td>
+              <td data-label="Observed"><code>hello Ada</code></td>
+              <td data-label="Result"><span class="status status--passed">PASSED</span></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <section class="editorial-section">
-        <h2>Who it's for</h2>
-        <div class="section-body">
-          <p>It's for maintainers whose getting-started guide works on their machine but breaks on users' machines.</p>
-        </div>
-      </section>
+      <h3>Environment comparison</h3>
+      <div class="table-wrap">
+        <table class="comparison-table">
+          <colgroup>
+            <col class="comparison-step">
+            <col>
+            <col>
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Step</th>
+              <th scope="col"><span class="environment-tag">bob · macOS 26.6.2 · Python 3.9.6</span></th>
+              <th scope="col"><span class="environment-tag">carol · Darwin 25.6.0 · Python 3.12.15</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Step 1</th>
+              <td><span class="status status--passed">PASSED</span></td>
+              <td><span class="status status--passed">PASSED</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Step 2</th>
+              <td><span class="status status--passed">PASSED</span></td>
+              <td><span class="status status--passed">PASSED</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Step 3</th>
+              <td><span class="status status--passed">PASSED</span></td>
+              <td><span class="status status--passed">PASSED</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Step 4</th>
+              <td><span class="status status--failed">FAILED</span></td>
+              <td><span class="status status--passed">PASSED</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Rerun step 4</th>
+              <td><span class="status status--passed">PASSED</span></td>
+              <td><span class="status status--passed">PASSED</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <section class="editorial-section">
-        <h2>An example run</h2>
-        <div class="section-body">
-          <p>This is a real run from three owner accounts on one Mac. The human asked the room to test the bundled quickstart. bob ran it on Python 3.9.6 and got a SyntaxError at step 4. carol ran it on Python 3.12.15 and passed.</p>
-          <p>The maintainer grouped the results, cited <code>sample/QUICKSTART.md:24</code> and <code>sample/hello.py:3</code>, then offered options A and B. When the human said “ok go ahead with the fix”, the maintainer asked which option. The human replied “approve B”. The agent sent both volunteers a local if/else change. Both reran and passed, and the final report said the repository wasn't changed.</p>
+      <h3>Options</h3>
+      <div class="options-grid">
+        <section class="option">
+          <h4>A. Require Python 3.10 or newer</h4>
+          <p>Add one prerequisite line to <code>sample/QUICKSTART.md:1</code>. <code>sample/hello.py:3-7</code> stays as is.</p>
+          <p>Tradeoff: no code change, but Python 3.9 users still can't run the sample.</p>
+        </section>
+        <section class="option">
+          <h4>B. Make the sample work on Python 3.9</h4>
+          <p>Replace the <code>match</code> block at <code>sample/hello.py:3-7</code> with an if/else over <code>sys.argv[1:]</code>.</p>
+          <p>Tradeoff: runs on 3.9 and later, but changes the sample's code.</p>
+        </section>
+      </div>
 
-          <section class="run-evidence" aria-label="Greet6 test results">
-            <h3>bob's environment</h3>
-            <div class="spec-block">
-              <dl class="leader-list">
-                <div class="leader-row">
-                  <dt><span class="leader-label">Volunteer</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                  <dd>bob</dd>
-                </div>
-                <div class="leader-row">
-                  <dt><span class="leader-label">OS</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                  <dd>macOS 26.6.2 arm64</dd>
-                </div>
-                <div class="leader-row">
-                  <dt><span class="leader-label">Python</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                  <dd>3.9.6</dd>
-                </div>
-                <div class="leader-row">
-                  <dt><span class="leader-label">Machine</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                  <dd>one Mac, own owner account</dd>
-                </div>
-              </dl>
-            </div>
+      <div class="decision">
+        <p>The human wrote “ok go ahead with the fix”. The maintainer asked which option. The human replied “approve B”.</p>
+        <p class="approval-stamp">APPROVED · B · 07:35 UTC</p>
+      </div>
 
-            <ol class="step-list" aria-label="bob's quickstart steps">
-              <li class="step">
-                <div class="step-heading">
-                  <span class="step-label">STEP 1</span>
-                  <span class="status status--passed">PASSED</span>
-                </div>
-                <pre class="command-block"><code>python3 --version</code></pre>
-                <dl class="leader-list result-list">
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Expected</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd>prints the Python version</dd>
-                  </div>
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Actual</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd><code>Python 3.9.6</code></dd>
-                  </div>
-                </dl>
-              </li>
-              <li class="step">
-                <div class="step-heading">
-                  <span class="step-label">STEP 2</span>
-                  <span class="status status--passed">PASSED</span>
-                </div>
-                <pre class="command-block"><code>git clone https://github.com/CryptoZephyr/elsewhere.git elsewhere-checkout</code></pre>
-                <dl class="leader-list result-list">
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Expected</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd>clone succeeds</dd>
-                  </div>
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Actual</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd><code>Cloning into 'elsewhere-checkout'...</code></dd>
-                  </div>
-                </dl>
-              </li>
-              <li class="step">
-                <div class="step-heading">
-                  <span class="step-label">STEP 3</span>
-                  <span class="status status--passed">PASSED</span>
-                </div>
-                <pre class="command-block"><code>cd elsewhere-checkout/sample</code></pre>
-                <dl class="leader-list result-list">
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Expected</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd>succeeds</dd>
-                  </div>
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Actual</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd>no output</dd>
-                  </div>
-                </dl>
-              </li>
-              <li class="step">
-                <div class="step-heading">
-                  <span class="step-label">STEP 4</span>
-                  <span class="status status--failed">FAILED</span>
-                </div>
-                <pre class="command-block"><code>python3 hello.py greet Ada</code></pre>
-                <dl class="leader-list result-list">
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Expected</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd><code>hello Ada</code></dd>
-                  </div>
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Actual</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd><code>SyntaxError: invalid syntax</code> at <code>sample/hello.py</code> line 3 (<code>match sys.argv[1:]:</code>)</dd>
-                  </div>
-                </dl>
-              </li>
-              <li class="step">
-                <div class="step-heading">
-                  <span class="step-label">OUTSIDE THE GUIDE</span>
-                  <span class="status status--blocked">BLOCKED</span>
-                </div>
-                <pre class="command-block"><code>sw_vers</code></pre>
-                <dl class="leader-list result-list">
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Expected</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd>not allowed by the lockdown</dd>
-                  </div>
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Actual</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd>denied by OpenCode permissions before it ran</dd>
-                  </div>
-                </dl>
-              </li>
-              <li class="step">
-                <div class="step-heading">
-                  <span class="step-label">RERUN STEP 4 (after option B, local change only)</span>
-                  <span class="status status--passed">PASSED</span>
-                </div>
-                <pre class="command-block"><code>python3 hello.py greet Ada</code></pre>
-                <dl class="leader-list result-list">
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Expected</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd><code>hello Ada</code></dd>
-                  </div>
-                  <div class="leader-row">
-                    <dt><span class="leader-label">Actual</span><span class="leader-fill" aria-hidden="true"></span></dt>
-                    <dd><code>hello Ada</code></dd>
-                  </div>
-                </dl>
-              </li>
-            </ol>
+      <div class="gallery">
+        <figure>
+          <img src="images/greet6-01-request.png" alt="The Mattermost kickoff thread shows the request to test the quickstart and the maintainer's first reply.">
+          <figcaption>The human posts the request in the kickoff thread.</figcaption>
+        </figure>
+        <figure>
+          <img src="images/greet6-02-results.png" alt="carol reports all steps passed on Python 3.12.15. bob reports a SyntaxError at step 4 on Python 3.9.6.">
+          <figcaption>carol passes on Python 3.12.15. bob fails on Python 3.9.6.</figcaption>
+        </figure>
+        <figure>
+          <img src="images/greet6-03-options.png" alt="The maintainer cites sample/QUICKSTART.md and sample/hello.py, then lists options A and B with their tradeoffs.">
+          <figcaption>The maintainer groups findings, cites the source, and offers two options.</figcaption>
+        </figure>
+        <figure>
+          <img src="images/greet6-04-approval.png" alt="After the human says to go ahead, the maintainer asks which option to use and waits for the reply approve B.">
+          <figcaption>The maintainer asks for a clear choice before acting.</figcaption>
+        </figure>
+        <figure>
+          <img src="images/greet6-05-reruns.png" alt="The thread shows the volunteers' rerun results and the maintainer's final report after option B.">
+          <figcaption>Both reruns pass. The maintainer posts the final report in the thread.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
 
-            <h3>Environment comparison</h3>
-            <div class="table-wrap">
-              <table class="comparison-table">
-                <colgroup>
-                  <col class="comparison-step">
-                  <col>
-                  <col>
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th scope="col">Step</th>
-                    <th scope="col"><span class="environment-tag">bob · macOS 26.6.2 · Python 3.9.6</span></th>
-                    <th scope="col"><span class="environment-tag">carol · Darwin 25.6.0 · Python 3.12.15</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">Step 1</th>
-                    <td><span class="status status--passed">PASSED</span></td>
-                    <td><span class="status status--passed">PASSED</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Step 2</th>
-                    <td><span class="status status--passed">PASSED</span></td>
-                    <td><span class="status status--passed">PASSED</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Step 3</th>
-                    <td><span class="status status--passed">PASSED</span></td>
-                    <td><span class="status status--passed">PASSED</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Step 4</th>
-                    <td><span class="status status--failed">FAILED</span></td>
-                    <td><span class="status status--passed">PASSED</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Rerun step 4</th>
-                    <td><span class="status status--passed">PASSED</span></td>
-                    <td><span class="status status--passed">PASSED</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+  <section class="notebook-entry" aria-labelledby="why-switch">
+    <aside class="entry-margin">
+      <p class="entry-number">ENTRY 04</p>
+      <p class="margin-note">Approval stays with the human</p>
+      <p class="entry-mobile-line">ENTRY 04 · SWITCH</p>
+    </aside>
+    <div class="entry-rule" aria-hidden="true"></div>
+    <div class="entry-content">
+      <p class="entry-kicker">ENTRY 04 · WHY SWITCH</p>
+      <h2 id="why-switch">Why it needs Switch</h2>
+      <ul>
+        <li>Each owner controls their own agent and controller. Switch brings those agents into one room.</li>
+        <li>Cross-owner messages are blocked by default. Setup adds a room-scoped exception for the maintainer agent and its linked messaging identity. In Solo, both agents share an owner and use owner-agents addressing.</li>
+        <li>Volunteers send results to the maintainer with targeted messages and post them in the kickoff thread.</li>
+        <li>The maintainer reads the selected project repo through a read-only GitHub connection.</li>
+        <li>Templates set up the room and agent roles. The maintainer offers choices in chat and acts only after the human approves one.</li>
+      </ul>
+      <p><a href="setup.html">Read the setup guide.</a></p>
+    </div>
+  </section>
+</article>
 
-            <h3>Options</h3>
-            <div class="options-grid">
-              <section class="option">
-                <h4>A. Require Python 3.10 or newer</h4>
-                <p>Add one prerequisite line to <code>sample/QUICKSTART.md:1</code>. <code>sample/hello.py:3-7</code> stays as is.</p>
-                <p>Tradeoff: no code change, but Python 3.9 users still can't run the sample.</p>
-              </section>
-              <section class="option">
-                <h4>B. Make the sample work on Python 3.9</h4>
-                <p>Replace the <code>match</code> block at <code>sample/hello.py:3-7</code> with an if/else over <code>sys.argv[1:]</code>.</p>
-                <p>Tradeoff: runs on 3.9 and later, but changes the sample's code.</p>
-              </section>
-            </div>
-
-            <div class="decision">
-              <p>The human wrote “ok go ahead with the fix”. The maintainer asked which option. The human replied “approve B”.</p>
-              <p class="approval-stamp">APPROVED · B · 07:35 UTC</p>
-            </div>
-          </section>
-
-          <div class="gallery">
-            <figure>
-              <img src="images/greet6-01-request.png" alt="The Mattermost kickoff thread shows the request to test the quickstart and the maintainer's first reply.">
-              <figcaption>The human posts the request in the kickoff thread.</figcaption>
-            </figure>
-            <figure>
-              <img src="images/greet6-02-results.png" alt="carol reports all steps passed on Python 3.12.15. bob reports a SyntaxError at step 4 on Python 3.9.6.">
-              <figcaption>carol passes on Python 3.12.15. bob fails on Python 3.9.6.</figcaption>
-            </figure>
-            <figure>
-              <img src="images/greet6-03-options.png" alt="The maintainer cites sample/QUICKSTART.md and sample/hello.py, then lists options A and B with their tradeoffs.">
-              <figcaption>The maintainer groups findings, cites the source, and offers two options.</figcaption>
-            </figure>
-            <figure>
-              <img src="images/greet6-04-approval.png" alt="After the human says to go ahead, the maintainer asks which option to use and waits for the reply approve B.">
-              <figcaption>The maintainer asks for a clear choice before acting.</figcaption>
-            </figure>
-            <figure>
-              <img src="images/greet6-05-reruns.png" alt="The thread shows the volunteers' rerun results and the maintainer's final report after option B.">
-              <figcaption>Both reruns pass. The maintainer posts the final report in the thread.</figcaption>
-            </figure>
-          </div>
-        </div>
-      </section>
-
-      <section class="editorial-section">
-        <h2>Why it needs Switch</h2>
-        <div class="section-body">
-          <ul>
-            <li>Each owner controls their own agent and controller. Switch brings those agents into one room.</li>
-            <li>Cross-owner messages are blocked by default. Setup adds a room-scoped exception for the maintainer agent and its linked messaging identity. In Solo, both agents share an owner and use owner-agents addressing.</li>
-            <li>Volunteers send results to the maintainer with targeted messages and post them in the kickoff thread.</li>
-            <li>The maintainer reads the selected project repo through a read-only GitHub connection.</li>
-            <li>Templates set up the room and agent roles. The maintainer offers choices in chat and acts only after the human approves one.</li>
-          </ul>
-          <p><a href="setup.html">Read the setup guide.</a></p>
-        </div>
-      </section>
     </main>
     <footer class="site-footer">
       <a class="brand brand--footer" href="index.html">
