@@ -28,10 +28,14 @@ maintainer human chooses one, and the volunteers rerun.
   particular people or agents in a room created by a different run, so this
   step is required.
 - Volunteers report environment, command, expected result, and actual result.
-  They don't speculate about causes. The maintainer waits for every volunteer,
-  reads the relevant source file through GitHub, groups results by environment,
-  and proposes labelled options. It waits for a clear human choice before
-  sending the approved fix instructions.
+  They don't speculate about causes. Volunteers send every result the
+  maintainer needs, including step results, failure briefs, requested updates,
+  and rerun results, with `send_targeted_message` in the kickoff thread, and
+  also post each report in that thread. Before waiting on a volunteer, the
+  maintainer checks the thread context once for a report that may already be
+  posted. It reads the relevant source file through GitHub, groups results by
+  environment, and proposes labelled options. It waits for a clear human
+  choice before sending the approved fix instructions.
 
 ## Setup
 

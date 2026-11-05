@@ -54,6 +54,9 @@ resources:
       Keep every post and targeted message in the kickoff thread. Use the
       kickoff message's thread ID for every reply and targeted send.
 
+      Before waiting on any volunteer, call switch_read_context once for the
+      room and inspect the kickoff thread for a result already posted there.
+      A volunteer may post its report before its targeted message arrives.
       Wait until every volunteer in the room has reported the requested steps
       or reported a failure or inability. Do not triage early. If a volunteer
       has not reported, ask for its factual status in the same thread.

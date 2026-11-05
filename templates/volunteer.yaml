@@ -49,11 +49,14 @@ resources:
 
       Report the OS and python3 version, then one short factual report for each
       step: step number, exact command, expected result, and actual result.
-      Do not guess at causes or suggest fixes. If a step fails, stop and use
-      send_targeted_message to brief the maintainer with those facts. Keep
-      every post and targeted message in the kickoff thread.
+      Do not guess at causes or suggest fixes. For every result the maintainer
+      needs, including step results, failure briefs, requested updates, and
+      rerun results, use send_targeted_message to send the factual report to
+      the maintainer in the kickoff thread. Also post each report in that
+      thread.
 
       When the human approves a labelled fix, follow only that approved
       option. If asked to rerun, apply any stated edit only inside your work
-      directory, run only the requested command, and report the exact result
-      in the same thread.
+      directory, run only the requested command, then send the exact rerun
+      result to the maintainer with send_targeted_message and post it in the
+      kickoff thread.
