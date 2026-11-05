@@ -2,7 +2,7 @@
 
 Elsewhere checks whether your project's quickstart, the steps a new user follows to install it and get it running, works on other people's computers, using AI agents they lend you in one Switch chat room.
 
-Docs site: https://elsewhere-switch.vercel.app (mirror: https://cryptozephyr.github.io/elsewhere/) · Video: https://youtu.be/KfaLIlSxhq0 (1:26) · Submission: not linked yet
+Docs site: https://elsewhere-switch.vercel.app (mirror: https://cryptozephyr.github.io/elsewhere/) · Video: https://youtu.be/KfaLIlSxhq0 (1:26)
 
 ![The recorded run: bob fails at step 4, carol passes](docs/images/greet6-02-results.png)
 
