@@ -11,8 +11,9 @@ permalink: index.html
     <div class="entry-rule" aria-hidden="true"></div>
     <div class="entry-content">
       <p class="entry-kicker">ENTRY 01 · PROJECT NOTE</p>
-      <h1 id="project-note">Elsewhere</h1>
+      <h1 id="project-note" class="home-hero-title">Fails for <span class="bob">bob</span>.<br>Passes for <span class="carol">carol</span>.</h1>
       <p class="lead">Community members lend their own locked-down AI agents to test a project's getting-started guide on their own machines, in one Switch room.</p>
+      <p>Elsewhere puts every volunteer's result side by side, so a guide that only breaks on some machines shows up before your users find it.</p>
     </div>
   </section>
 
@@ -36,6 +37,10 @@ permalink: index.html
     <div class="entry-rule" aria-hidden="true"></div>
     <div class="entry-content">
       <p class="entry-kicker">ENTRY 03 · 2026-11-05 · 07:33:07 to 07:35:40 UTC · GREET6 RUN</p>
+      <div class="environment-tags">
+        <span class="environment-tag environment-tag--bob">bob · macOS 26.6.2 · Python 3.9.6</span>
+        <span class="environment-tag environment-tag--carol">carol · Darwin 25.6.0 · Python 3.12.15</span>
+      </div>
       <h2 id="greet6-run">An example run</h2>
       <p>This is a real run from three owner accounts on one Mac. The human asked the room to test the bundled quickstart. bob ran it on Python 3.9.6 and got a SyntaxError at step 4. carol ran it on Python 3.12.15 and passed.</p>
       <p>The maintainer grouped the results, cited <code>sample/QUICKSTART.md:24</code> and <code>sample/hello.py:3</code>, then offered options A and B. When the human said “ok go ahead with the fix”, the maintainer asked which option. The human replied “approve B”. The agent sent both volunteers a local if/else change. Both reran and passed, and the final report said the repository wasn't changed.</p>
@@ -79,42 +84,42 @@ permalink: index.html
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr class="machine-row--bob">
               <th scope="row">STEP 1</th>
               <td data-label="Command run"><code>python3 --version</code></td>
               <td data-label="Expected">prints the Python version</td>
               <td data-label="Observed"><code>Python 3.9.6</code></td>
               <td data-label="Result"><span class="status status--passed">PASSED</span></td>
             </tr>
-            <tr>
+            <tr class="machine-row--bob">
               <th scope="row">STEP 2</th>
               <td data-label="Command run"><code class="code--path">git clone https:/<wbr>/<wbr>github.com/<wbr>CryptoZephyr/<wbr>elsewhere.git elsewhere-checkout</code></td>
               <td data-label="Expected">clone succeeds</td>
               <td data-label="Observed"><code>Cloning into 'elsewhere-checkout'...</code></td>
               <td data-label="Result"><span class="status status--passed">PASSED</span></td>
             </tr>
-            <tr>
+            <tr class="machine-row--bob">
               <th scope="row">STEP 3</th>
               <td data-label="Command run"><code class="code--path">cd elsewhere-checkout/<wbr>sample</code></td>
               <td data-label="Expected">succeeds</td>
               <td data-label="Observed">no output</td>
               <td data-label="Result"><span class="status status--passed">PASSED</span></td>
             </tr>
-            <tr>
+            <tr class="machine-row--bob">
               <th scope="row">STEP 4</th>
               <td data-label="Command run"><code>python3 hello.py greet Ada</code></td>
               <td data-label="Expected"><code>hello Ada</code></td>
               <td data-label="Observed"><code>SyntaxError: invalid syntax</code> at <code>sample/hello.py</code> line 3 (<code>match sys.argv[1:]:</code>)</td>
               <td data-label="Result"><span class="status status--failed">FAILED</span></td>
             </tr>
-            <tr>
+            <tr class="machine-row--bob">
               <th scope="row">OUTSIDE THE GUIDE</th>
               <td data-label="Command run"><code>sw_vers</code></td>
               <td data-label="Expected">not allowed by the lockdown</td>
               <td data-label="Observed">denied by OpenCode permissions before it ran</td>
               <td data-label="Result"><span class="status status--blocked">BLOCKED</span></td>
             </tr>
-            <tr>
+            <tr class="machine-row--bob">
               <th scope="row">RERUN STEP 4<br>(after option B, local change only)</th>
               <td data-label="Command run"><code>python3 hello.py greet Ada</code></td>
               <td data-label="Expected"><code>hello Ada</code></td>
@@ -136,8 +141,8 @@ permalink: index.html
           <thead>
             <tr>
               <th scope="col">Step</th>
-              <th scope="col"><span class="environment-tag">bob · macOS 26.6.2 · Python 3.9.6</span></th>
-              <th scope="col"><span class="environment-tag">carol · Darwin 25.6.0 · Python 3.12.15</span></th>
+              <th scope="col"><span class="environment-tag environment-tag--bob">bob · macOS 26.6.2 · Python 3.9.6</span></th>
+              <th scope="col"><span class="environment-tag environment-tag--carol">carol · Darwin 25.6.0 · Python 3.12.15</span></th>
             </tr>
           </thead>
           <tbody>

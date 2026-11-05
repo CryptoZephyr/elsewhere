@@ -40,10 +40,13 @@
 
 :root {
   color-scheme: light;
-  --canvas: #FFFFFF;
+  --canvas: #F6F1E7;
   --ink: #0C0C0D;
   --muted: #5E5E5E;
-  --rule: #DDDDD8;
+  --rule: #DDD3C0;
+  --bob: #2B4BD9;
+  --carol: #E07A1F;
+  --carol-text: #D3721D;
   --passed: #1C6B3A;
   --failed: #A3262A;
   --blocked: #7A5200;
@@ -250,6 +253,18 @@ p {
   max-width: 58ch;
   font-size: 1.16rem;
   line-height: 1.55;
+}
+
+.home-hero-title {
+  font-size: clamp(2rem, 7vw, 4.4rem);
+}
+
+.home-hero-title .bob {
+  color: var(--bob);
+}
+
+.home-hero-title .carol {
+  color: var(--carol-text);
 }
 
 .entry-content > :last-child {
@@ -469,6 +484,19 @@ li::marker {
   line-height: 1.5;
 }
 
+.run-table tbody tr.machine-row--bob {
+  border-left: 4px solid var(--bob);
+}
+
+.run-table tbody tr.machine-row--carol {
+  border-left: 4px solid var(--carol);
+}
+
+.run-table tbody tr.machine-row--bob > th:first-child,
+.run-table tbody tr.machine-row--carol > th:first-child {
+  padding-left: 0.5rem;
+}
+
 .run-table td {
   font-size: 1rem;
   line-height: 1.5;
@@ -501,13 +529,30 @@ li::marker {
 
 .environment-tag {
   display: inline-block;
-  padding: 0.12rem 0.25rem;
-  border: 1px solid var(--ink);
+  padding: 0.12rem 0.45rem;
+  border: 0;
   color: var(--ink);
   font-size: 0.65rem;
   font-weight: 400;
   line-height: 1.45;
   overflow-wrap: anywhere;
+}
+
+.environment-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+.environment-tag--bob {
+  color: var(--canvas);
+  background: var(--bob);
+}
+
+.environment-tag--carol {
+  color: var(--ink);
+  background: var(--carol);
 }
 
 .options-grid {
@@ -537,9 +582,9 @@ li::marker {
   display: inline-block;
   margin: 0;
   padding: 0.22rem 0.42rem;
-  border: 2px solid var(--ink);
-  color: var(--ink);
-  background: #F2C230;
+  border: 0;
+  color: var(--canvas);
+  background: var(--ink);
   font-family: "DM Mono", ui-monospace, monospace;
   font-size: 0.78rem;
   font-weight: 500;
@@ -682,6 +727,11 @@ li::marker {
 
   .run-table tbody tr {
     margin: 0 0 1.3rem;
+  }
+
+  .run-table tbody tr.machine-row--bob,
+  .run-table tbody tr.machine-row--carol {
+    padding-left: 0.5rem;
   }
 
   .run-table tbody th {
