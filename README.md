@@ -17,7 +17,7 @@ maintainer human chooses one, and the volunteers rerun.
 
 The recorded demo used three owner accounts on one Mac.
 
-Docs: https://cryptozephyr.github.io/elsewhere/
+Docs: https://elsewhere-switch.vercel.app (mirror: https://cryptozephyr.github.io/elsewhere/)
 
 ## How it works
 
