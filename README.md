@@ -70,6 +70,7 @@ workdir, checks both effective OpenCode configs, and confirms that neither
 agent has an OpenCode session. The volunteer uses `owner-agents` addressing,
 so no addressing-policy update is needed. Paste the printed request message
 into the room's kickoff thread. It mentions both agents.
+Pass `--machine NAME` to place both agents on a specific controller.
 
 For the bundled example, the result depends on the judge's Python version.
 macOS system Python 3.9.6 fails at the pattern-matching step. Python 3.10 or

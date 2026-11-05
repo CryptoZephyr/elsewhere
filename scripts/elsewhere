@@ -670,6 +670,7 @@ def build_parser() -> argparse.ArgumentParser:
     solo.add_argument("--project", required=True)
     solo.add_argument("--repo", required=True)
     solo.add_argument("--handle", default="you")
+    solo.add_argument("--machine")
     add_common_options(solo)
     return parser
 
@@ -754,11 +755,15 @@ def show_dry_run(args: argparse.Namespace) -> None:
     project = validate_slug(args.project, "Project")
     repo = validate_repo(args.repo)
     handle = validate_slug(args.handle, "Handle")
-    maintainer_inputs = {
-        "project": project,
-        "project_repo": repo,
-        "model": "opencode/big-pickle",
-    }
+    machine = validate_machine(args.machine)
+    maintainer_inputs = add_machine(
+        {
+            "project": project,
+            "project_repo": repo,
+            "model": "opencode/big-pickle",
+        },
+        machine,
+    )
     maintainer_body = template_request(
         load_template("maintainer.yaml"),
         maintainer_inputs,
@@ -767,12 +772,15 @@ def show_dry_run(args: argparse.Namespace) -> None:
     dry_run_request(base, "POST", "/rooms/from-template-document", maintainer_body)
     dry_run_request(base, "GET", "/rooms/<room-id>")
     dry_run_request(base, "GET", "/management/agents/<maintainer-agent-id>")
-    volunteer_inputs = {
-        "project": project,
-        "volunteer": handle,
-        "room": "<room-name-from-maintainer-response>",
-        "mode": "solo",
-    }
+    volunteer_inputs = add_machine(
+        {
+            "project": project,
+            "volunteer": handle,
+            "room": "<room-name-from-maintainer-response>",
+            "mode": "solo",
+        },
+        machine,
+    )
     volunteer_body = template_request(
         load_template("volunteer.yaml"),
         volunteer_inputs,
@@ -916,6 +924,7 @@ def run_solo(args: argparse.Namespace) -> None:
     project = validate_slug(args.project, "Project")
     repo = validate_repo(args.repo)
     handle = validate_slug(args.handle, "Handle")
+    machine = validate_machine(args.machine)
     if args.dry_run:
         show_dry_run(args)
         return
@@ -926,11 +935,14 @@ def run_solo(args: argparse.Namespace) -> None:
         maintainer_response = deploy(
             client,
             load_template("maintainer.yaml"),
-            {
-                "project": project,
-                "project_repo": repo,
-                "model": "opencode/big-pickle",
-            },
+            add_machine(
+                {
+                    "project": project,
+                    "project_repo": repo,
+                    "model": "opencode/big-pickle",
+                },
+                machine,
+            ),
             f"Elsewhere {project} maintainer",
         )
         maintainer = created_agent(maintainer_response, maintainer_name)
@@ -956,12 +968,15 @@ def run_solo(args: argparse.Namespace) -> None:
         volunteer_response = deploy(
             client,
             load_template("volunteer.yaml"),
-            {
-                "project": project,
-                "volunteer": handle,
-                "room": room_name,
-                "mode": "solo",
-            },
+            add_machine(
+                {
+                    "project": project,
+                    "volunteer": handle,
+                    "room": room_name,
+                    "mode": "solo",
+                },
+                machine,
+            ),
             f"Elsewhere {project} {handle} volunteer",
         )
         volunteer = created_agent(volunteer_response, volunteer_name)
