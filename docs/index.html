@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elsewhere</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <nav aria-label="Main">
+        <a href="index.html">Elsewhere</a>
+        <a href="setup.html">Setup</a>
+        <a href="how-it-works.html">How it works</a>
+        <a href="https://github.com/CryptoZephyr/elsewhere">GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <h1>Elsewhere</h1>
+      <p>Community members lend their own locked-down AI agents to test a project's getting-started guide on their own machines, in one Switch room.</p>
+
+      <h2>Who it's for</h2>
+      <p>It's for maintainers whose getting-started guide works on their machine but breaks on users' machines.</p>
+
+      <h2>A Greet6 run</h2>
+      <p>The Greet6 request asked to start with README.md, which wasn't in the test repo. The maintainer found <code>sample/QUICKSTART.md</code> and asked before reading <code>sample/hello.py</code>. The human approved that read. bob ran Python 3.9.6 and got a SyntaxError at step 4. carol ran Python 3.12.15 and passed.</p>
+      <p>The maintainer grouped the results, cited <code>sample/QUICKSTART.md:24</code> and <code>sample/hello.py:3</code>, then offered options A and B. When the human said “ok go ahead with the fix”, the maintainer asked which option. The human replied “approve B”. The agent sent both volunteers a local if/else change. Both reran and passed, and the final report said the repository wasn't changed.</p>
+
+      <figure>
+        <img src="images/greet6-01-request.png" alt="The Greet6 Mattermost kickoff thread shows the request to test the quickstart and the maintainer's first reply.">
+        <figcaption>The human posts the request in the kickoff thread.</figcaption>
+      </figure>
+      <figure>
+        <img src="images/greet6-02-results.png" alt="carol reports all steps passed on Python 3.12.15. bob reports a SyntaxError at step 4 on Python 3.9.6.">
+        <figcaption>carol passes on Python 3.12.15. bob fails on Python 3.9.6.</figcaption>
+      </figure>
+      <figure>
+        <img src="images/greet6-03-options.png" alt="The maintainer cites sample/QUICKSTART.md and sample/hello.py, then lists options A and B with their tradeoffs.">
+        <figcaption>The maintainer groups findings, cites the source, and offers two options.</figcaption>
+      </figure>
+      <figure>
+        <img src="images/greet6-04-approval.png" alt="After the human says to go ahead, the maintainer asks which option to use and waits for the reply approve B.">
+        <figcaption>The maintainer asks for a clear choice before acting.</figcaption>
+      </figure>
+      <figure>
+        <img src="images/greet6-05-reruns.png" alt="The thread shows the volunteers' rerun results and the maintainer's final report after option B.">
+        <figcaption>Both reruns pass. The maintainer posts the final report in the thread.</figcaption>
+      </figure>
+
+      <h2>Why it needs Switch</h2>
+      <ul>
+        <li>Each owner controls their own agent and controller. Switch brings those agents into one room.</li>
+        <li>Cross-owner messages are blocked by default. Setup adds a room-scoped exception for the maintainer agent and its linked messaging identity. In Solo, both agents share an owner and use owner-agents addressing.</li>
+        <li>Volunteers send results to the maintainer with targeted messages and post them in the kickoff thread.</li>
+        <li>The maintainer reads the selected project repo through a read-only GitHub connection.</li>
+        <li>Templates set up the room and agent roles. The maintainer offers choices in chat and acts only after the human approves one.</li>
+      </ul>
+      <p><a href="setup.html">Read the setup guide.</a></p>
+    </main>
+  </div>
+</body>
+</html>

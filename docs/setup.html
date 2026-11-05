@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Setup | Elsewhere</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <nav aria-label="Main">
+        <a href="index.html">Elsewhere</a>
+        <a href="setup.html" aria-current="page">Setup</a>
+        <a href="how-it-works.html">How it works</a>
+        <a href="https://github.com/CryptoZephyr/elsewhere">GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <h1>Setup</h1>
+      <h2>What you need</h2>
+      <p>A Switch server with managed agents and a messaging bridge. OpenCode on each machine. A read-only GitHub connection for the maintainer, scoped to the project repo.</p>
+      <p>Run the commands from a local clone of this public repo. Gateway password login must be enabled on the server.</p>
+
+      <h2>Gateway login</h2>
+      <p>The default Gateway is the local HTTPS server. Set <code>SWITCH_GATEWAY_API</code> when the server isn't at that address. A Gateway URL must end in <code>/gateway</code>. Remote URLs must use HTTPS. Set <code>SWITCH_GATEWAY_EMAIL</code> to skip the email prompt. Set <code>SWITCH_GATEWAY_PASSWORD</code> in the environment or enter it at the hidden prompt. The password and session cookie aren't written to disk.</p>
+      <p>For a private or self-signed Gateway, set <code>SWITCH_CA_FILE</code> or pass <code>--ca-file PATH</code> with a trusted CA certificate. TLS verification stays on.</p>
+      <p>During real setup, the maintainer command uses <code>opencode/big-pickle</code> by default. Pass <code>--model MODEL</code> to select another model. Use <code>--machine NAME</code> to choose a controller. Add <code>--dry-run</code> to any command to print planned requests without calling the API or changing workdirs.</p>
+
+      <h2>Solo (one person, about 5 minutes)</h2>
+      <p>Use this mode when one person owns both agents. It deploys a maintainer and one volunteer, checks both configs, and uses owner-agents addressing without a policy update.</p>
+      <pre><code>scripts/elsewhere solo --project my-project --repo OWNER/NAME</code></pre>
+      <p>Pass <code>--machine NAME</code> to place both agents on a specific controller. For the bundled sample, macOS system Python 3.9.6 fails at the pattern-matching step. Python 3.10 or newer passes.</p>
+      <p>Paste the printed request into the kickoff thread after setup is ready. It mentions both agents.</p>
+
+      <h2>Real setup</h2>
+      <p>The maintainer deploys the room and its agent. The command prints a room name, an invite line, and a request message for the kickoff thread.</p>
+      <pre><code>scripts/elsewhere maintainer --project my-project --repo OWNER/NAME</code></pre>
+      <p>If needed, add <code>--machine NAME</code> to select a controller and <code>--model MODEL</code> to choose a model. The maintainer workdir is separate from the project checkout and must contain only <code>opencode.json</code>.</p>
+      <p>Each volunteer runs one command on their own machine with a unique lowercase handle.</p>
+      <pre><code>scripts/elsewhere volunteer --join JOIN_CODE --handle volunteer-1</code></pre>
+      <p>Volunteers can add <code>--machine NAME</code> to select a controller. The command clones this public repo into the empty workdir before any session, checks the effective OpenCode permissions, and confirms there isn't an existing session. It then adds only the maintainer agent and linked messaging identity to the room's addressing policy.</p>
+      <p>The join code contains the project slug and Switch IDs. It isn't an access credential. A volunteer must sign in to an account that can access the room.</p>
+
+      <h2>Running a test</h2>
+      <p>After everyone is ready, paste the printed request into the kickoff thread. Keep the exact wording and always @mention the maintainer. Keep reports, clarifications, approvals, and rerun results in that thread. Mention the maintainer in every human reply that asks a question or approves an option.</p>
+      <p>The printed request names <code>sample/QUICKSTART.md</code> and <code>sample/hello.py</code>. The maintainer may read those files without asking and must ask before reading any other source path. Volunteers send every requested result to the maintainer with a targeted message and also post it in the thread.</p>
+
+      <h2>Troubleshooting</h2>
+      <h3>Certificate errors</h3>
+      <p>Set <code>SWITCH_CA_FILE</code> or pass <code>--ca-file PATH</code> with the trusted CA certificate. Don't turn off TLS verification.</p>
+      <h3>A reply didn't reach the maintainer</h3>
+      <p>Replies without an @mention may not be delivered to the agent. Mention the maintainer in each approval or clarification. Volunteers should send results with a targeted message as well as posting in the thread.</p>
+      <h3>A session started before config was ready</h3>
+      <p>Don't use a session that started before the workdir config was placed. Redeploy with a new project slug, then post the kickoff request after setup is ready.</p>
+
+      <p><a href="how-it-works.html">Read how the workflow works.</a></p>
+    </main>
+  </div>
+</body>
+</html>
