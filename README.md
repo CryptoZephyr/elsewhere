@@ -2,7 +2,7 @@
 
 Elsewhere checks whether your project's quickstart, the steps a new user follows to install it and get it running, works on other people's computers, using AI agents they lend you in one Switch chat room.
 
-Docs site: https://elsewhere-switch.vercel.app (mirror: https://cryptozephyr.github.io/elsewhere/) · Video: not available yet · Submission: not linked yet
+Docs site: https://elsewhere-switch.vercel.app (mirror: https://cryptozephyr.github.io/elsewhere/) · Video: https://youtu.be/KfaLIlSxhq0 (1:26) · Submission: not linked yet
 
 ![The recorded run: bob fails at step 4, carol passes](docs/images/greet6-02-results.png)
 
@@ -68,7 +68,7 @@ If your Python is 3.10 or newer, every step passes and you'll get an all-pass re
 
 ## Demo
 
-The demo video is not available yet. These screenshots come from the recorded three-owner run on 2026-11-05, which took 2m33s from request to final report.
+Watch the 1:26 video: https://youtu.be/KfaLIlSxhq0. It uses footage from a fresh three-owner run recorded live in Mattermost, with long agent waits cut and some parts sped up, which the video labels. The screenshots below come from the earlier recorded three-owner run on 2026-11-05, which took 2m33s from request to final report.
 
 | | |
 | --- | --- |
