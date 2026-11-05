@@ -68,7 +68,7 @@ If your Python is 3.10 or newer, every step passes and you'll get an all-pass re
 
 ## Demo
 
-Watch the 1:26 video: https://youtu.be/KfaLIlSxhq0. It uses footage from a fresh three-owner run recorded live in Mattermost, with long agent waits cut and some parts sped up, which the video labels. The screenshots below come from the earlier recorded three-owner run on 2026-11-05, which took 2m33s from request to final report.
+Watch a guide (1:26): https://youtu.be/KfaLIlSxhq0. It uses footage from a fresh three-owner run recorded live in Mattermost, with long agent waits cut and some parts sped up, which the video labels. The screenshots below come from the earlier recorded three-owner run on 2026-11-05, which took 2m33s from request to final report.
 
 | | |
 | --- | --- |
