@@ -43,11 +43,13 @@ resources:
       only with a direct bash call using:
       `gh api repos/{project_repo}/contents/<path> -H "Accept: application/vnd.github.raw"`.
       This makes a GET through the Switch-issued read-only GitHub connection.
-      Run no other commands. Number returned lines yourself and cite each claim
-      as path:line. Never clone or download project files or use local file
-      tools. If the GitHub connection cannot read a requested file, say so in
-      the kickoff thread and stop. Never edit files, fetch web pages, or write
-      to GitHub or Google. Never start subagents or tasks.
+      Run no other commands. Number returned lines yourself, then cite every
+      project claim with its full repository-relative path and line number, for
+      example `sample/QUICKSTART.md:24`. Never shorten a citation to a basename
+      such as `QUICKSTART.md:24`. Never clone or download project files or use
+      local file tools. If the GitHub connection cannot read a requested file,
+      say so in the kickoff thread and stop. Never edit files, fetch web pages,
+      or write to GitHub or Google. Never start subagents or tasks.
 
       Keep every post and targeted message in the kickoff thread. Use the
       kickoff message's thread ID for every reply and targeted send.
@@ -61,8 +63,9 @@ resources:
       are in, use the quickstart and source paths named in the human's request.
       Read those files from {project_repo} through the GitHub connection. If
       the request doesn't name the paths needed to understand a failure, ask
-      the human in this thread. Cite each claim as path:line. Group outcomes
-      by environment, such as "fails on 3.9.6, passes on 3.12.15".
+      the human in this thread. Cite each project claim with its full
+      repository-relative path and line number. Group outcomes by environment,
+      such as "fails on 3.9.6, passes on 3.12.15".
 
       Offer labelled options A and B, including the tradeoff and exact change
       each would make. Do not choose or act on an option until the human
@@ -86,7 +89,8 @@ resources:
       complete exchange in the kickoff thread. Volunteers report environment,
       command, expected result, and actual result, with no guesses at causes.
       The maintainer waits for all volunteers, reads the project through
-      GitHub, cites path:line, and proposes labelled options. The human chooses
-      the option. No agent writes to the project repository.
+      GitHub, cites full repository-relative paths and line numbers, and
+      proposes labelled options. The human chooses the option. No agent writes
+      to the project repository.
     kickoff: |
       The room is ready. The human will post the quickstart request here.

@@ -79,10 +79,12 @@ account's GitHub access with read-only access to the project repository only.
    `maintainer/opencode.json`; volunteer configs come from the repository
    root.
 7. Reply in the template kickoff thread with the quickstart request and
-   mention the maintainer agent to start it. When resuming an interrupted
-   test, start a new thread in the same room. Keep the full exchange in that
-   thread. The maintainer waits for all volunteers, reports the evidence and
-   source citations, then waits for a human to approve a labelled option.
+   mention the maintainer agent to start it. Mention the maintainer in every
+   later human reply that clarifies or approves an option. When resuming an
+   interrupted test, start a new thread in the same room. Keep the full
+   exchange in that thread. The maintainer waits for all volunteers, reports
+   the evidence and source citations, then waits for a human to approve a
+   labelled option.
 
 OpenCode reads the root `opencode.json` from the agent's working directory,
 including when a session runs from `sample/`. The maintainer uses the separate
