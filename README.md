@@ -1,16 +1,19 @@
 # Elsewhere
 
+Elsewhere tests your project's getting-started guide on your community's own
+machines, through their own locked-down agents in one Switch room.
+
+Elsewhere is for project maintainers who want a small, reproducible test of
+their onboarding instructions across volunteer environments, without giving
+volunteers access to the maintainer's machine or write access to the source
+repository.
+
 A maintainer publishes a Python quickstart. Two volunteers try it on their own
 machines: one on Python 3.9.6 gets a syntax error, while another on Python
 3.12.15 succeeds. Their locked-down agents report the command and result in one
 Switch room. The maintainer's agent checks the source through a read-only
 GitHub connection, cites the relevant lines, and offers labelled fixes. The
 maintainer human chooses one, and the volunteers rerun.
-
-Elsewhere is for project maintainers who want a small, reproducible test of
-their onboarding instructions across volunteer environments, without giving
-volunteers access to the maintainer's machine or write access to the source
-repository.
 
 ## How it works
 
@@ -38,8 +41,8 @@ support managed agents. Set up OpenCode on each machine. Connect the maintainer
 account's GitHub access with read-only access to the project repository only.
 
 1. Import and deploy `templates/maintainer.yaml` as the project maintainer.
-   Set the project slug, choose a machine, and keep the model at
-   `opencode/big-pickle` or select another free model.
+   Set the project slug and GitHub `owner/name` repository, choose a machine,
+   and keep the model at `opencode/big-pickle` or select another free model.
 2. Invite volunteer humans to the room. Each volunteer imports and deploys
    `templates/volunteer.yaml`, choosing the room created in step 1 and their
    own machine.

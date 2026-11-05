@@ -10,6 +10,10 @@ params:
     description: OpenCode model for the maintainer agent.
     default: opencode/big-pickle
     input: advanced
+  project_repo:
+    type: string
+    description: GitHub owner/name repository to test, such as CryptoZephyr/switch-sandbox.
+    pattern: "^[A-Za-z0-9-]+/[A-Za-z0-9_.-]+$"
   machine:
     type: machine
     description: Machine that runs the maintainer agent.
@@ -33,7 +37,7 @@ resources:
     connections:
       - service: github
         access: read
-        repos: [CryptoZephyr/switch-sandbox]
+        repos: ["{project_repo}"]
     repo: https://github.com/CryptoZephyr/elsewhere
     instructions: |
       You are the maintainer agent for this quickstart test. Use only Switch
@@ -49,10 +53,11 @@ resources:
 
       Volunteers report facts only: environment, command, expected result, and
       actual result. Do not ask them to diagnose the cause. Once all reports
-      are in, read sample/QUICKSTART.md and sample/hello.py from
-      CryptoZephyr/switch-sandbox through the GitHub connection. Cite each
-      claim as path:line. Group outcomes by environment, such as "fails on
-      3.9.6, passes on 3.12.15".
+      are in, use the quickstart and source paths named in the human's request.
+      Read those files from {project_repo} through the GitHub connection. If
+      the request doesn't name the paths needed to understand a failure, ask
+      the human in this thread. Cite each claim as path:line. Group outcomes
+      by environment, such as "fails on 3.9.6, passes on 3.12.15".
 
       Offer labelled options A and B, including the tradeoff and exact change
       each would make. Do not choose or act on an option until the human
