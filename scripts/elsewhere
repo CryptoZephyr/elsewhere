@@ -702,6 +702,8 @@ def show_dry_run(args: argparse.Namespace) -> None:
         dry_run_request(base, "GET", "/rooms/<room-id>")
         dry_run_request(base, "GET", "/management/agents/<maintainer-agent-id>")
         print("After deployment: write maintainer/opencode.json and verify config and zero sessions.")
+        print("Request message to paste in the kickoff thread:")
+        print(request_message(project, repo))
         return
 
     if args.command == "volunteer":
@@ -790,6 +792,8 @@ def show_dry_run(args: argparse.Namespace) -> None:
     dry_run_request(base, "GET", "/rooms/<room-id>")
     dry_run_request(base, "GET", "/management/agents/<volunteer-agent-id>")
     print("Both workdirs are prepared and checked before the request message is printed.")
+    print("Request message to paste in the kickoff thread:")
+    print(request_message(project, repo, handle))
 
 
 def request_message(
@@ -800,8 +804,10 @@ def request_message(
     if volunteer:
         mentions += f" @elsewhere-{project}-{volunteer}"
     return (
-        f"{mentions} Please test the quickstart in {repo}, starting with README.md. "
-        "Ask me in this thread before reading any additional source paths."
+        f"{mentions} Please test the quickstart in {repo}, starting with "
+        "sample/QUICKSTART.md and sample/hello.py. You may read these two files "
+        "without asking. Ask me in this thread before reading any additional "
+        "source paths."
     )
 
 
