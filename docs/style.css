@@ -183,17 +183,8 @@ main {
   margin: 0 0 0.65rem;
 }
 
-.entry-number {
-  color: var(--ink);
-  font-weight: 500;
-}
-
 .margin-note {
   max-width: 18ch;
-}
-
-.entry-mobile-line {
-  display: none;
 }
 
 .entry-rule {
@@ -268,7 +259,14 @@ p {
 ul,
 ol {
   margin: 0 0 1.15rem;
+}
+
+ul {
   padding-left: 1.3rem;
+}
+
+ol {
+  padding-left: 2.6rem;
 }
 
 li {
@@ -281,6 +279,7 @@ li::marker {
 }
 
 .procedure-steps {
+  padding-left: 2.6rem;
   list-style-type: decimal-leading-zero;
 }
 
@@ -304,6 +303,20 @@ li::marker {
 
 .command-block code {
   font-size: inherit;
+}
+
+.code--path {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.code--flag {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.leader-row dd .code--flag {
+  white-space: nowrap;
 }
 
 .leader-list {
@@ -406,15 +419,15 @@ li::marker {
 }
 
 .run-step-column {
-  width: 18%;
+  width: 12%;
 }
 
 .run-command-column {
-  width: 22%;
+  width: 29%;
 }
 
 .run-expected-column {
-  width: 17%;
+  width: 16%;
 }
 
 .run-observed-column {
@@ -588,25 +601,7 @@ li::marker {
   }
 
   .entry-margin {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .entry-margin .entry-number,
-  .entry-margin .entry-date,
-  .entry-margin .margin-note {
     display: none;
-  }
-
-  .entry-mobile-line {
-    display: block;
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.67rem;
-    line-height: 1.4;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .entry-rule {
@@ -615,7 +610,7 @@ li::marker {
 
   .entry-content {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 1;
   }
 
   .options-grid {
@@ -655,6 +650,14 @@ li::marker {
   .options-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 1.2rem;
+  }
+
+  .procedure-steps {
+    padding-left: 2.4rem;
+  }
+
+  ol {
+    padding-left: 2.4rem;
   }
 
   .run-table,

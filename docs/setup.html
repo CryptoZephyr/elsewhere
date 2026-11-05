@@ -29,9 +29,7 @@
 <article class="notebook">
   <section class="notebook-entry" aria-labelledby="what-you-need">
     <aside class="entry-margin">
-      <p class="entry-number">ENTRY 01</p>
       <p class="margin-note">Managed agents and a messaging bridge</p>
-      <p class="entry-mobile-line">ENTRY 01 · PREREQUISITES</p>
     </aside>
     <div class="entry-rule" aria-hidden="true"></div>
     <div class="entry-content">
@@ -44,9 +42,7 @@
 
   <section class="notebook-entry" aria-labelledby="gateway-login">
     <aside class="entry-margin">
-      <p class="entry-number">ENTRY 02</p>
       <p class="margin-note">TLS verification stays on</p>
-      <p class="entry-mobile-line">ENTRY 02 · GATEWAY LOGIN</p>
     </aside>
     <div class="entry-rule" aria-hidden="true"></div>
     <div class="entry-content">
@@ -67,23 +63,23 @@
           <dd>Set <code>SWITCH_GATEWAY_PASSWORD</code> in the environment or enter it at the hidden prompt. The password and session cookie aren't written to disk.</dd>
         </div>
         <div class="leader-row">
-          <dt><span class="leader-label"><code>SWITCH_CA_FILE</code> / <code>--ca-file PATH</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-          <dd>For a private or self-signed Gateway, set <code>SWITCH_CA_FILE</code> or pass <code>--ca-file PATH</code> with a trusted CA certificate. TLS verification stays on.</dd>
+          <dt><span class="leader-label"><code>SWITCH_CA_FILE</code> / <code class="code--flag">--ca-file PATH</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>For a private or self-signed Gateway, set <code>SWITCH_CA_FILE</code> or pass <code class="code--flag">--ca-file PATH</code> with a trusted CA certificate. TLS verification stays on.</dd>
         </div>
       </dl>
       <p>During real setup, the maintainer command uses <code>opencode/big-pickle</code> by default.</p>
       <dl class="leader-list">
         <div class="leader-row">
-          <dt><span class="leader-label"><code>--model MODEL</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-          <dd>Pass <code>--model MODEL</code> to select another model.</dd>
+          <dt><span class="leader-label"><code class="code--flag">--model MODEL</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Pass <code class="code--flag">--model MODEL</code> to select another model.</dd>
         </div>
         <div class="leader-row">
-          <dt><span class="leader-label"><code>--machine NAME</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-          <dd>Use <code>--machine NAME</code> to choose a controller.</dd>
+          <dt><span class="leader-label"><code class="code--flag">--machine NAME</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Use <code class="code--flag">--machine NAME</code> to choose a controller.</dd>
         </div>
         <div class="leader-row">
-          <dt><span class="leader-label"><code>--dry-run</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-          <dd>Add <code>--dry-run</code> to any command to print planned requests without calling the API or changing workdirs.</dd>
+          <dt><span class="leader-label"><code class="code--flag">--dry-run</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+          <dd>Add <code class="code--flag">--dry-run</code> to any command to print planned requests without calling the API or changing workdirs.</dd>
         </div>
       </dl>
     </div>
@@ -91,9 +87,7 @@
 
   <section class="notebook-entry" aria-labelledby="solo">
     <aside class="entry-margin">
-      <p class="entry-number">ENTRY 03</p>
       <p class="margin-note">Python 3.9.6 fails at the sample step</p>
-      <p class="entry-mobile-line">ENTRY 03 · PROCEDURE 01 · SOLO</p>
     </aside>
     <div class="entry-rule" aria-hidden="true"></div>
     <div class="entry-content">
@@ -105,7 +99,7 @@
           <pre class="command-block"><code>scripts/elsewhere solo --project my-project --repo OWNER/NAME</code></pre>
         </li>
         <li>
-          <p>Pass <code>--machine NAME</code> to place both agents on a specific controller.</p>
+          <p>Pass <code class="code--flag">--machine NAME</code> to place both agents on a specific controller.</p>
         </li>
         <li>
           <p>For the bundled sample, macOS system Python 3.9.6 fails at the pattern-matching step. Python 3.10 or newer passes.</p>
@@ -119,9 +113,7 @@
 
   <section class="notebook-entry" aria-labelledby="real-setup">
     <aside class="entry-margin">
-      <p class="entry-number">ENTRY 04</p>
       <p class="margin-note">Config before any session</p>
-      <p class="entry-mobile-line">ENTRY 04 · PROCEDURE 02 · REAL SETUP</p>
     </aside>
     <div class="entry-rule" aria-hidden="true"></div>
     <div class="entry-content">
@@ -133,8 +125,8 @@
           <pre class="command-block"><code>scripts/elsewhere maintainer --project my-project --repo OWNER/NAME</code></pre>
           <dl class="leader-list">
             <div class="leader-row">
-              <dt><span class="leader-label"><code>--machine NAME</code> / <code>--model MODEL</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>If needed, add <code>--machine NAME</code> to select a controller and <code>--model MODEL</code> to choose a model.</dd>
+              <dt><span class="leader-label"><code class="code--flag">--machine NAME</code> / <code class="code--flag">--model MODEL</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+              <dd>If needed, add <code class="code--flag">--machine NAME</code> to select a controller and <code class="code--flag">--model MODEL</code> to choose a model.</dd>
             </div>
           </dl>
           <p>The maintainer workdir is separate from the project checkout and must contain only <code>opencode.json</code>.</p>
@@ -144,8 +136,8 @@
           <pre class="command-block"><code>scripts/elsewhere volunteer --join JOIN_CODE --handle volunteer-1</code></pre>
           <dl class="leader-list">
             <div class="leader-row">
-              <dt><span class="leader-label"><code>--machine NAME</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
-              <dd>Volunteers can add <code>--machine NAME</code> to select a controller.</dd>
+              <dt><span class="leader-label"><code class="code--flag">--machine NAME</code></span><span class="leader-fill" aria-hidden="true"></span></dt>
+              <dd>Volunteers can add <code class="code--flag">--machine NAME</code> to select a controller.</dd>
             </div>
           </dl>
           <p>The command clones this public repo into the empty workdir before any session, checks the effective OpenCode permissions, and confirms there isn't an existing session. It then adds only the maintainer agent and linked messaging identity to the room's addressing policy.</p>
@@ -157,9 +149,7 @@
 
   <section class="notebook-entry" aria-labelledby="running-test">
     <aside class="entry-margin">
-      <p class="entry-number">ENTRY 05</p>
       <p class="margin-note">Keep the exchange in the thread</p>
-      <p class="entry-mobile-line">ENTRY 05 · RUNNING A TEST</p>
     </aside>
     <div class="entry-rule" aria-hidden="true"></div>
     <div class="entry-content">
@@ -172,9 +162,7 @@
 
   <section class="notebook-entry" aria-labelledby="troubleshooting">
     <aside class="entry-margin">
-      <p class="entry-number">ENTRY 06</p>
       <p class="margin-note">Redeploy with a fresh slug</p>
-      <p class="entry-mobile-line">ENTRY 06 · TROUBLESHOOTING</p>
     </aside>
     <div class="entry-rule" aria-hidden="true"></div>
     <div class="entry-content troubleshooting">
@@ -184,7 +172,7 @@
       <dl class="leader-list">
         <div class="leader-row">
           <dt><span class="leader-label">Certificate</span><span class="leader-fill" aria-hidden="true"></span></dt>
-          <dd>Set <code>SWITCH_CA_FILE</code> or pass <code>--ca-file PATH</code> with the trusted CA certificate. Don't turn off TLS verification.</dd>
+          <dd>Set <code>SWITCH_CA_FILE</code> or pass <code class="code--flag">--ca-file PATH</code> with the trusted CA certificate. Don't turn off TLS verification.</dd>
         </div>
       </dl>
       <h3>A reply didn't reach the maintainer</h3>
