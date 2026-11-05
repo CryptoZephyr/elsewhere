@@ -79,7 +79,8 @@ account's GitHub access with read-only access to the project repository only.
    `maintainer/opencode.json`; volunteer configs come from the repository
    root.
 7. Reply in the template kickoff thread with the quickstart request and
-   mention the maintainer agent to start it. Keep the full exchange in that
+   mention the maintainer agent to start it. When resuming an interrupted
+   test, start a new thread in the same room. Keep the full exchange in that
    thread. The maintainer waits for all volunteers, reports the evidence and
    source citations, then waits for a human to approve a labelled option.
 
@@ -94,9 +95,9 @@ the effective settings from each agent's working directory before posting.
 Volunteers have a Bash deny rule with only `mkdir`, `cd`, `python3`, `cat`,
 `ls`, `pwd`, `git clone`, and `python3 --version` allowed. OpenCode edits are
 limited to the agent's work directory; external-directory access and web
-fetching are denied. The maintainer has local file tools, Bash, edit,
-external-directory, and web access denied. It gets only a read-only GitHub
-connection. Keep auto-approval disabled.
+fetching are denied. The maintainer config denies all OpenCode tools by
+default, then allows `switch_*` tools for its read-only GitHub connection.
+Keep auto-approval disabled.
 
 The templates and restrictions are guardrails, not a sandbox for hostile code.
 The volunteer agent can read and edit files in its work directory, and every
