@@ -1,6 +1,6 @@
 # Elsewhere
 
-Elsewhere checks whether your project's getting-started guide works on other people's computers, using AI agents they lend you in one Switch chat room.
+Elsewhere checks whether your project's quickstart, the steps a new user follows to install it and get it running, works on other people's computers, using AI agents they lend you in one Switch chat room.
 
 Docs site: https://elsewhere-switch.vercel.app (mirror: https://cryptozephyr.github.io/elsewhere/) · Video: not available yet · Submission: not linked yet
 
@@ -12,24 +12,24 @@ Status: works end to end on one Mac with three owner accounts. Not yet tested on
 
 ## The problem
 
-A getting-started guide usually works on the maintainer's own computer. New users on a different OS, or with a different Python or Node version, hit an error on step 4 and quietly give up. Testing the guide in one clean CI container doesn't catch this, because the failure only shows up on machines that aren't like yours.
+A quickstart usually works on the maintainer's own computer. New users on a different OS, or with a different Python or Node version, hit an error on step 4 and quietly give up. Testing the quickstart in one clean CI container doesn't catch this, because the failure only shows up on machines that aren't like yours.
 
 ## What Elsewhere does
 
-People from your community lend an AI agent that runs on their own computer. Each agent follows your guide word for word and reports exactly what happened. Your agent puts everyone's results side by side, reads your code, explains what broke and for whom, and offers fixes. Nothing changes until you approve one in the chat.
+People from your community lend an AI agent that runs on their own computer. Each agent follows your quickstart word for word and reports exactly what happened. Your agent puts everyone's results side by side, reads your code, explains what broke and for whom, and offers fixes. Nothing changes until you approve one in the chat.
 
 Here's a real run. bob has Python 3.9.6 and carol has Python 3.12.15. Both follow the same four steps. Step 4 fails for bob and passes for carol. The maintainer's agent finds that the sample uses `match`, which only exists in Python 3.10 and newer, and offers two fixes: A says "you need Python 3.10", and B changes the sample so it works on 3.9. The human replies "approve B", both volunteers rerun, and step 4 passes for both.
 
 ## How it works
 
 1. You ask. Post "please test my quickstart" in a Switch room.
-2. Volunteers run it. Each volunteer's agent follows the guide on its own computer and reports each command and result.
+2. Volunteers run it. Each volunteer's agent follows the quickstart on its own computer and reports each command and result.
 3. Your agent compares. It groups results by machine, reads the code it needs from GitHub and offers labelled fixes.
 4. You pick. You reply "approve B". The volunteers apply only that change locally, rerun and confirm.
 
 ```mermaid
 flowchart LR
-    A["You post: please test my quickstart"] --> B["Volunteer agents run the guide on their own computers"]
+    A["You post: please test my quickstart"] --> B["Volunteer agents run the quickstart on their own computers"]
     B --> C["Your agent compares results and reads the code"]
     C --> D{"Did every step pass?"}
     D -- "yes" --> E["All-pass report"]
@@ -131,7 +131,7 @@ The `scripts/elsewhere` command uses only the Python standard library. It signs 
 | Switch addressing policies | The volunteer keeps its owner rule and gets one room-scoped exception for the maintainer agent and its linked messaging identity. Solo volunteers use `owner-agents`. | Agents from different owners can talk, in this room only. |
 | Switch targeted messages | Volunteers send every result to the maintainer with `send_targeted_message`. | Results reach the maintainer even when a chat reply wouldn't. |
 | Switch GitHub connection | The maintainer reads files with `gh api repos/{project_repo}/contents/<path>`. | It can cite your code without being able to change it. |
-| OpenCode permissions | `opencode.json` for volunteers and `maintainer/opencode.json` for the maintainer. | Agents can only run what the guide needs. |
+| OpenCode permissions | `opencode.json` for volunteers and `maintainer/opencode.json` for the maintainer. | Agents can only run commands the quickstart needs. |
 | OpenCode free model | `opencode/big-pickle` by default, changeable with `--model`. | The whole run costs nothing. |
 
 ## Evidence
@@ -145,10 +145,10 @@ The `scripts/elsewhere` command uses only the Python standard library. It signs 
 
 | Attempt | Expected behavior | Result |
 | --- | --- | --- |
-| A volunteer runs `sw_vers`, which isn't in the guide | Blocked before it runs | Denied by OpenCode permissions before it ran |
+| A volunteer runs `sw_vers`, which isn't in the quickstart | Blocked before it runs | Denied by OpenCode permissions before it ran |
 | The human writes "ok go ahead with the fix" | The agent asks which option | It asked for A or B and waited |
 | The human writes "approve B" | Only fix B is sent | Both volunteers applied B locally and reran |
-| The guide fails on Python 3.9.6 only | Results grouped by machine | The agent cited `sample/hello.py` and compared bob with carol |
+| The quickstart fails on Python 3.9.6 only | Results grouped by machine | The agent cited `sample/hello.py` and compared bob with carol |
 | A session starts before the config is in place | Setup prevents it | The kickoff is neutral and config is placed before any session |
 
 ## Repository structure
@@ -243,7 +243,7 @@ the maintainer human applies any approved source change separately.
 ## Limitations
 
 - The three test environments ran on one Mac and differed by Python version. No real Windows or Linux machine and no remote enrollment have been tested.
-- Only the bundled four-step sample guide has been tested. A longer real-world guide hasn't been run yet.
+- Only the bundled four-step sample quickstart has been tested. A longer real-world quickstart hasn't been run yet.
 - Fixes are suggestions. Elsewhere doesn't open pull requests, and a human applies any project change.
 - The guardrails aren't a sandbox for hostile code.
 - Free model availability and limits can change.
