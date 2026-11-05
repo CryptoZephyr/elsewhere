@@ -15,18 +15,20 @@ Switch room. The maintainer's agent checks the source through a read-only
 GitHub connection, cites the relevant lines, and offers labelled fixes. The
 maintainer human chooses one, and the volunteers rerun.
 
+The recorded demo used three owner accounts on one Mac.
+
 ## How it works
 
 - A maintainer agent and a room are created from `templates/maintainer.yaml`.
   The room instructions and kickoff establish the test thread. The maintainer
   can read the selected GitHub repository and may address anyone in that room.
 - Each volunteer deploys `templates/volunteer.yaml`. Its `repo` field tells
-  the agent to clone this public repository into its work directory if needed,
-  and the root `opencode.json` sets its OpenCode restrictions.
-- The maintainer human adds each volunteer's agent and linked messaging
-  identity to the room-scoped addressing policy. The template cannot name
-  particular people or agents in a room created by a different run, so this
-  step is required.
+  the agent to clone this public repository into its work directory if needed.
+  The setup command clones it before any session so the root `opencode.json`
+  sets the volunteer's OpenCode restrictions.
+- Cross-owner volunteers get a room-scoped addressing rule for the maintainer
+  agent and its linked messaging identity. Solo volunteers use
+  `owner-agents` addressing because both agents have the same owner.
 - Volunteers report environment, command, expected result, and actual result.
   They don't speculate about causes. Volunteers send every result the
   maintainer needs, including step results, failure briefs, requested updates,
@@ -39,70 +41,92 @@ maintainer human chooses one, and the volunteers rerun.
 
 ## Setup
 
-Use Switch's standard Docker deployment for the server and Switch Console to
-connect the messaging workspace and manage agent machines. The server must
-support managed agents. Set up OpenCode on each machine. Connect the maintainer
-account's GitHub access with read-only access to the project repository only.
+Use a Switch server with managed agents and a messaging bridge. Each agent
+owner needs a Switch account and OpenCode on the selected machine. The
+maintainer's account needs a GitHub read connection scoped to the project
+repository. Run these commands from a local clone of this public repository.
 
-1. Run templates through the Gateway template-document endpoint,
-   `POST /gateway/rooms/from-template-document`, as the person who owns each
-   agent. Import `templates/maintainer.yaml` and deploy it as the project
-   maintainer. Set the project slug and GitHub `owner/name` repository, choose
-   a machine, and keep the model at `opencode/big-pickle` or select another
-   free model. The request has the template YAML in `template`, parameter
-   values in `inputs`, and a label in `template_name`.
-2. Before any maintainer session starts, clone this public repository into
-   a separate local directory and copy only `maintainer/opencode.json` to the
-   root of the maintainer's working directory. Do not put the project checkout
-   in the maintainer's working directory. The maintainer template has no `repo`
-   field, so deployment does not populate its work directory.
-3. Invite volunteer humans to the room. Each volunteer imports and deploys
-   `templates/volunteer.yaml` through the same endpoint, choosing the room
-   created in step 1, their own machine, the project slug, and a unique
-   lowercase `volunteer` handle such as `volunteer-1`.
-4. Before any volunteer session starts, clone this public repository into
-   each volunteer's empty working directory. The template `repo` field adds
-   an instruction for the agent to clone the repository at session start if
-   needed, but deployment itself does not populate the directory. Cloning it
-   beforehand makes the root `opencode.json` available when OpenCode starts.
-5. For each volunteer agent, run `scripts/allow-maintainer` once as that
-   volunteer's owner. Provide the Gateway API base URL, a short-lived
-   `switch_auth` session cookie value, the volunteer agent ID, room ID,
-   maintainer agent ID, and the maintainer's linked messaging identity ID as
-   environment variables. `MAINTAINER_USER_ID` is the linked identity's `id`
-   field from `/auth/me/identities`. Don't use its `external_user_id` field or
-   the Switch user's ID. The script reads the
-   volunteer's current policy, preserves its owner rule, and adds only the
-   named maintainer agent and human in the selected room. The variable names
-   are `SWITCH_GATEWAY_API`, `SWITCH_AUTH_COOKIE`, `VOLUNTEER_AGENT_ID`,
-   `ROOM_ID`, `MAINTAINER_AGENT_ID`, and `MAINTAINER_USER_ID`.
-   `SWITCH_GATEWAY_API` ends in `/gateway`.
-6. Before posting, confirm that no session exists yet for any of the agents.
-   From each actual work directory, run `opencode debug config` and verify
-   the effective permissions. The maintainer config is copied from
-   `maintainer/opencode.json`; volunteer configs come from the repository
-   root.
-7. Reply in the template kickoff thread with the quickstart request and
-   mention the maintainer agent to start it. Mention the maintainer in every
-   later human reply that clarifies or approves an option. When resuming an
-   interrupted test, start a new thread in the same room. Keep the full
-   exchange in that thread. The maintainer waits for all volunteers, reports
-   the evidence and source citations, then waits for a human to approve a
-   labelled option.
+The script uses Gateway password login, which must be enabled on the server.
+It reads the password from
+`SWITCH_GATEWAY_PASSWORD` or prompts without echoing it, and keeps the
+`switch_auth` cookie in memory. Set `SWITCH_GATEWAY_API` when the server is not
+the local HTTPS default. For volunteers on other machines, set it to a
+Gateway URL they can reach. The printed invite line includes that URL. Gateway
+URLs must end in `/gateway`, and non-local URLs must use HTTPS. Set
+`SWITCH_GATEWAY_EMAIL` to skip the email prompt. No password or cookie is
+written to disk. Add `--dry-run` to any command to print its planned requests
+without calling the API or changing the workdirs.
 
-OpenCode reads the root `opencode.json` from the agent's working directory,
-including when a session runs from `sample/`. The maintainer uses the separate
-config in `maintainer/`, copied to the root of its work directory as described
-above. The maintainer work directory should contain only that config. Verify
-the effective settings from each agent's working directory before posting.
+### Solo (one person, about 5 minutes)
+
+Run one command from the repository root:
+
+```sh
+scripts/elsewhere solo --project my-project --repo OWNER/NAME
+```
+
+The command creates a maintainer and one volunteer owned by the same account,
+places the maintainer config, clones this repository into the volunteer
+workdir, checks both effective OpenCode configs, and confirms that neither
+agent has an OpenCode session. The volunteer uses `owner-agents` addressing,
+so no addressing-policy update is needed. Paste the printed request message
+into the room's kickoff thread. It mentions both agents.
+
+For the bundled example, the result depends on the judge's Python version.
+macOS system Python 3.9.6 fails at the pattern-matching step. Python 3.10 or
+newer passes it.
+
+### Real setup (maintainer plus volunteers on their own machines)
+
+The maintainer runs one command:
+
+```sh
+scripts/elsewhere maintainer --project my-project --repo OWNER/NAME
+```
+
+The command deploys the maintainer and room, places the separate
+`maintainer/opencode.json` in the empty maintainer workdir, checks its
+effective permissions, and confirms there is no OpenCode session. It prints
+the room name, an invite line, and a request message to paste into the kickoff
+thread after volunteers are ready. The kickoff itself is neutral, so no agent
+starts before its config is in place. If the account has multiple linked
+messaging identities, the command asks which one is used by the room. The
+invite line includes the Gateway URL volunteers need.
+
+Each volunteer uses one command on their own machine, with a unique lowercase
+handle:
+
+```sh
+scripts/elsewhere volunteer --join JOIN_CODE --handle volunteer-1
+```
+
+The command deploys the volunteer into the room, clones this public repository
+into the empty workdir, checks the effective OpenCode permissions and zero
+sessions, then adds only the maintainer agent and its linked messaging
+identity to the volunteer's addressing policy for that room. The join code
+contains only the project slug and Switch IDs. It is setup data, not an access
+credential. Volunteers must sign in to an account that can access the room.
+Mention the maintainer in the kickoff request and in every later clarification
+or approval. Keep the full exchange in that thread.
+
+The maintainer command defaults to `opencode/big-pickle`; use `--model` to
+select another model. Use `--machine` to select a controller by name.
+Volunteers can also use `--machine`. The maintainer's workdir is kept separate
+from the project checkout and must contain only `opencode.json`.
+
+OpenCode reads the root `opencode.json` from the agent's workdir, including
+when a session runs from `sample/`. The script checks the effective
+permissions with `opencode debug config --pure` and verifies there is no
+session before it prints `ready`. It never posts messages or starts sessions.
 
 ## Safety and limits
 
-Volunteers have a Bash deny rule with only `mkdir`, `cd`, `python3`, `cat`,
-`ls`, `pwd`, `git clone`, and `python3 --version` allowed. OpenCode edits are
-limited to the agent's work directory; external-directory access and web
-fetching are denied. The maintainer config denies all OpenCode tools by
-default, then allows `switch_*` and a narrow Bash rule for `gh api repos/*`.
+Volunteers have a Bash deny rule with only the patterns `mkdir *`, `cd *`,
+`python3 *`, `cat *`, `ls`, `pwd`, `python3 --version`, and `git clone *`
+allowed. OpenCode edits are limited to the agent's work directory;
+external-directory access and web fetching are denied. The maintainer config
+denies all OpenCode tools by default, then allows `switch_*` and a narrow Bash
+rule for `gh api repos/*`.
 The maintainer may read files only with the default-GET command
 `gh api repos/{project_repo}/contents/<path> -H "Accept: application/vnd.github.raw"`.
 It numbers the returned lines itself and cites `path:line`. It runs no other

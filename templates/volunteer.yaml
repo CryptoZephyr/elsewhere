@@ -9,6 +9,11 @@ params:
     type: string
     description: Unique lowercase volunteer handle used in the agent name.
     pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+  mode:
+    type: enum
+    description: Whether the volunteer is testing cross-owner or in solo mode.
+    enum: [cross-owner, solo]
+    default: cross-owner
   room:
     type: room
     description: Existing Elsewhere project room to join.
@@ -36,7 +41,10 @@ resources:
       smallModel: "{model}"
     auto_mode: true
     auto_approve: false
-    addressing: owner
+    addressing:
+      - if: "{mode} == solo"
+        value: owner-agents
+      - value: owner
     connections: []
     repo: https://github.com/CryptoZephyr/elsewhere
     join: ["{room}"]

@@ -1,0 +1,976 @@
+#!/usr/bin/env python3
+"""Set up Elsewhere agents and their local OpenCode workdirs."""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import getpass
+import ipaddress
+import json
+import os
+import re
+import shutil
+import sqlite3
+import subprocess
+import sys
+import time
+from http.cookiejar import CookieJar
+from pathlib import Path
+from typing import List, Optional
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote, urlsplit
+from urllib.request import HTTPCookieProcessor, Request, build_opener
+from uuid import UUID
+
+ROOT = Path(__file__).resolve().parent.parent
+GATEWAY_DEFAULT = "https://localhost:8443/gateway"
+PUBLIC_REPO = "https://github.com/CryptoZephyr/elsewhere.git"
+JOIN_PREFIX = "ew1_"
+SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+REPO_RE = re.compile(r"^[A-Za-z0-9-]+/[A-Za-z0-9_.-]+$")
+TEMPLATE_VALUE_RE = re.compile(r'^[^"\\\x00-\x1f\x7f]+$')
+
+
+class SetupError(Exception):
+    pass
+
+
+class APIError(SetupError):
+    def __init__(self, status: int, method: str, path: str) -> None:
+        super().__init__(f"Switch API returned HTTP {status} for {method} {path}.")
+        self.status = status
+
+
+class Gateway:
+    def __init__(self, base_url: str) -> None:
+        self.base_url = validate_gateway_url(base_url)
+        self.cookies = CookieJar()
+        self.opener = build_opener(HTTPCookieProcessor(self.cookies))
+
+    def request(self, method: str, path: str, body: Optional[dict] = None):
+        data = None if body is None else json.dumps(body).encode("utf-8")
+        request = Request(
+            self.base_url + path,
+            data=data,
+            method=method,
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+        )
+        try:
+            with self.opener.open(request, timeout=30) as response:
+                raw = response.read()
+        except HTTPError as error:
+            raise APIError(error.code, method, path) from None
+        except URLError:
+            raise SetupError("Could not reach the Switch Gateway.") from None
+        if not raw:
+            return None
+        try:
+            return json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            raise SetupError(f"Switch returned invalid JSON for {method} {path}.") from None
+
+    def login(self, email: str, password: str) -> None:
+        try:
+            self.request("POST", "/auth/login", {"email": email, "password": password})
+        except APIError as error:
+            if error.status == 403:
+                raise SetupError(
+                    "Gateway password login is disabled on this server."
+                ) from None
+            if error.status == 401:
+                raise SetupError("Gateway login failed. Check the email and password.") from None
+            raise
+        if not any(cookie.name == "switch_auth" for cookie in self.cookies):
+            raise SetupError("Gateway login did not create a switch_auth session.")
+        if any(cookie.name == "switch_auth" and cookie.secure for cookie in self.cookies):
+            if urlsplit(self.base_url).scheme != "https":
+                raise SetupError(
+                    "Gateway set a Secure session cookie. Use its HTTPS Gateway URL."
+                )
+
+
+def validate_gateway_url(value: str) -> str:
+    parsed = urlsplit(value.strip())
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise SetupError("Gateway URL must be an HTTP(S) URL ending in /gateway.")
+    if parsed.username or parsed.password or parsed.query or parsed.fragment:
+        raise SetupError("Gateway URL must not contain credentials, query data, or a fragment.")
+    try:
+        hostname = parsed.hostname
+        parsed.port
+    except ValueError:
+        raise SetupError("Gateway URL has an invalid host or port.") from None
+    if not hostname or not re.fullmatch(r"[A-Za-z0-9.-]+|[A-Fa-f0-9:.]+", hostname):
+        raise SetupError("Gateway URL has an invalid host.")
+    if parsed.scheme == "http":
+        try:
+            loopback = hostname.lower() == "localhost" or ipaddress.ip_address(hostname).is_loopback
+        except ValueError:
+            loopback = False
+        if not loopback:
+            raise SetupError("Use HTTPS for a non-local Gateway.")
+    if parsed.path.rstrip("/") != "/gateway":
+        raise SetupError("Gateway URL must end in /gateway.")
+    return value.strip().rstrip("/")
+
+
+def gateway_url(args: argparse.Namespace) -> str:
+    value = args.gateway or os.environ.get("SWITCH_GATEWAY_API") or GATEWAY_DEFAULT
+    return validate_gateway_url(value)
+
+
+def gateway_client(args: argparse.Namespace) -> Gateway:
+    email = args.email or os.environ.get("SWITCH_GATEWAY_EMAIL", "").strip()
+    if not email:
+        email = input("Switch Gateway email: ").strip()
+    if not email:
+        raise SetupError("A Switch Gateway email is required.")
+    password = os.environ.get("SWITCH_GATEWAY_PASSWORD")
+    if not password:
+        try:
+            password = getpass.getpass("Switch Gateway password: ")
+        except (EOFError, OSError):
+            raise SetupError(
+                "Set SWITCH_GATEWAY_PASSWORD or run this command in an interactive terminal."
+            ) from None
+    if not password:
+        raise SetupError("A Switch Gateway password is required.")
+    client = Gateway(gateway_url(args))
+    client.login(email, password)
+    return client
+
+
+def validate_slug(value: object, label: str) -> str:
+    if not isinstance(value, str) or not SLUG_RE.fullmatch(value):
+        raise SetupError(f"{label} must be a lowercase slug.")
+    return value
+
+
+def validate_repo(value: object) -> str:
+    if not isinstance(value, str) or not REPO_RE.fullmatch(value):
+        raise SetupError("Repository must be in OWNER/NAME form.")
+    return value
+
+
+def validate_model(value: object) -> str:
+    if (
+        not isinstance(value, str)
+        or not value
+        or value.strip() != value
+        or not TEMPLATE_VALUE_RE.fullmatch(value)
+    ):
+        raise SetupError("Model must be non-empty and safe to place in the template.")
+    return value
+
+
+def validate_machine(value: object) -> Optional[str]:
+    if value is None:
+        return None
+    if (
+        not isinstance(value, str)
+        or not value
+        or value.strip() != value
+        or not TEMPLATE_VALUE_RE.fullmatch(value)
+    ):
+        raise SetupError("Machine name must be non-empty and safe to place in the template.")
+    return value
+
+
+def uuid_string(value: object, label: str) -> str:
+    if not isinstance(value, str):
+        raise SetupError(f"{label} must be a UUID.")
+    try:
+        return str(UUID(value))
+    except ValueError:
+        raise SetupError(f"{label} must be a UUID.") from None
+
+
+def load_template(name: str) -> str:
+    path = ROOT / "templates" / name
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        raise SetupError(f"Could not read {path.name}.") from None
+
+
+def template_request(template: str, inputs: dict, name: str) -> dict:
+    return {
+        "template": template,
+        "inputs": inputs,
+        "template_name": name,
+    }
+
+
+def deploy(client: Gateway, template: str, inputs: dict, name: str) -> dict:
+    response = client.request(
+        "POST",
+        "/rooms/from-template-document",
+        template_request(template, inputs, name),
+    )
+    if not isinstance(response, dict):
+        raise SetupError("Template deployment did not return an object.")
+    return response
+
+
+def created_agent(response: dict, expected_name: str) -> dict:
+    agents = response.get("created_agents")
+    if not isinstance(agents, list) or len(agents) != 1:
+        raise SetupError("Template deployment did not create exactly one agent.")
+    agent = agents[0]
+    if not isinstance(agent, dict) or agent.get("name") != expected_name:
+        raise SetupError("Template deployment returned an unexpected agent.")
+    agent["agent_id"] = uuid_string(agent.get("agent_id"), "Agent ID")
+    machine = agent.get("machine")
+    if isinstance(machine, dict):
+        agent["machine_name"] = machine.get("name")
+    else:
+        agent["machine_name"] = None
+    if not isinstance(agent.get("machine_name"), str) or not agent["machine_name"]:
+        raise SetupError("Template deployment did not report the selected machine.")
+    return agent
+
+
+def room_result(response: dict) -> tuple[str, str]:
+    room = response.get("room")
+    if not isinstance(room, dict):
+        raise SetupError("Template deployment did not create a room.")
+    room_id = uuid_string(room.get("room_id"), "Room ID")
+    room_name = room.get("room_name")
+    if not isinstance(room_name, str) or not room_name:
+        raise SetupError("Template deployment did not return the room name.")
+    return room_id, room_name
+
+
+def get_room(client: Gateway, room_id: str) -> dict:
+    room = client.request("GET", f"/rooms/{quote(room_id, safe='')}")
+    if not isinstance(room, dict) or room.get("id") != room_id:
+        raise SetupError("Switch did not return the requested room.")
+    return room
+
+
+def wait_for_workdir(
+    client: Gateway,
+    agent_id: str,
+    agent_name: str,
+    expected_machine: str,
+) -> Path:
+    path = f"/management/agents/{quote(agent_id, safe='')}"
+    deadline = time.monotonic() + 45
+    while time.monotonic() < deadline:
+        try:
+            managed = client.request("GET", path)
+        except APIError as error:
+            if error.status != 404:
+                raise
+            time.sleep(1)
+            continue
+        if not isinstance(managed, dict):
+            raise SetupError("Switch returned an invalid managed-agent record.")
+        machine_name = managed.get("controller_name")
+        if machine_name and machine_name != expected_machine:
+            raise SetupError(
+                f"Agent was placed on {machine_name}, not the requested local machine "
+                f"{expected_machine}."
+            )
+        status = managed.get("status")
+        directory = status.get("directory") if isinstance(status, dict) else None
+        if (
+            managed.get("controller_state") == "online"
+            and machine_name == expected_machine
+            and isinstance(directory, str)
+            and directory
+        ):
+            candidate = Path(directory).expanduser()
+            if not candidate.is_absolute():
+                raise SetupError("Switch reported a non-absolute agent workdir.")
+            try:
+                workdir = candidate.resolve(strict=True)
+            except OSError:
+                time.sleep(1)
+                continue
+            if not workdir.is_dir():
+                time.sleep(1)
+                continue
+            if workdir.name != agent_name:
+                raise SetupError("The reported workdir does not match the agent name.")
+            return workdir
+        time.sleep(1)
+    raise SetupError(
+        "The controller did not report an online, local workdir for the deployed agent."
+    )
+
+
+def assert_empty(workdir: Path, role: str) -> None:
+    try:
+        entries = sorted(entry.name for entry in workdir.iterdir())
+    except OSError:
+        raise SetupError(f"Could not inspect the {role} workdir.") from None
+    if entries:
+        raise SetupError(
+            f"The {role} workdir must be empty before setup. Found: {', '.join(entries)}."
+        )
+
+
+def opencode_database() -> Path:
+    override = os.environ.get("OPENCODE_DB")
+    if override:
+        return Path(override).expanduser()
+    data_home = os.environ.get("XDG_DATA_HOME")
+    root = Path(data_home).expanduser() if data_home else Path.home() / ".local" / "share"
+    return root / "opencode" / "opencode.db"
+
+
+def path_is_in_workdir(value: object, workdir: Path) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    candidate = Path(value).expanduser()
+    if not candidate.is_absolute():
+        return False
+    try:
+        resolved = candidate.resolve()
+    except (OSError, RuntimeError, ValueError):
+        return False
+    return resolved == workdir or workdir in resolved.parents
+
+
+def ensure_no_session(workdir: Path) -> None:
+    database = opencode_database()
+    try:
+        database.stat()
+    except FileNotFoundError:
+        return
+    except OSError:
+        raise SetupError("Could not inspect the OpenCode session database.") from None
+    try:
+        connection = sqlite3.connect(
+            "file:" + quote(str(database.resolve()), safe="/") + "?mode=ro",
+            uri=True,
+        )
+        try:
+            tables = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table'"
+                )
+            }
+            session_tables = tables.intersection({"session", "session_v2"})
+            if not session_tables:
+                raise SetupError(
+                    "Could not verify zero OpenCode sessions because the database "
+                    "has no session table."
+                )
+            matches = []
+            for table in session_tables:
+                rows = connection.execute(
+                    f'SELECT id, directory FROM "{table}" WHERE directory IS NOT NULL'
+                )
+                for session_id, directory in rows:
+                    if not isinstance(directory, str) or not directory or "\x00" in directory:
+                        raise SetupError(
+                            "Could not verify zero OpenCode sessions because a "
+                            "session has an invalid workdir."
+                        )
+                    if not Path(directory).expanduser().is_absolute():
+                        raise SetupError(
+                            "Could not verify zero OpenCode sessions because a "
+                            "session has a relative workdir."
+                        )
+                    if path_is_in_workdir(directory, workdir):
+                        matches.append(session_id)
+        finally:
+            connection.close()
+    except SetupError:
+        raise
+    except (OSError, sqlite3.Error):
+        raise SetupError("Could not inspect the OpenCode session database.") from None
+    if matches:
+        raise SetupError(
+            f"Found {len(matches)} OpenCode session(s) in the workdir. "
+            "Setup requires a fresh workdir with no sessions."
+        )
+
+
+def sanitize_child_environment(environment: dict) -> None:
+    for name in ("SWITCH_GATEWAY_PASSWORD", "GH_TOKEN", "GITHUB_TOKEN"):
+        environment.pop(name, None)
+
+
+def run_opencode_config(workdir: Path, expected_config: Path) -> None:
+    executable = shutil.which("opencode")
+    if not executable:
+        raise SetupError("OpenCode is not available on PATH.")
+    try:
+        expected = json.loads(expected_config.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        raise SetupError("Could not read the expected OpenCode config.") from None
+    process_env = os.environ.copy()
+    sanitize_child_environment(process_env)
+    try:
+        result = subprocess.run(
+            [executable, "debug", "config", "--pure"],
+            cwd=str(workdir),
+            env=process_env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        raise SetupError("Could not run opencode debug config --pure.") from None
+    if result.returncode != 0:
+        raise SetupError("opencode debug config --pure failed.")
+    try:
+        effective = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        raise SetupError("OpenCode did not return JSON for its effective config.") from None
+    if effective.get("permission") != expected.get("permission"):
+        raise SetupError("Effective OpenCode permissions do not match the expected config.")
+
+
+def prepare_maintainer_workdir(workdir: Path) -> None:
+    assert_empty(workdir, "maintainer")
+    ensure_no_session(workdir)
+    config = ROOT / "maintainer" / "opencode.json"
+    try:
+        (workdir / "opencode.json").write_bytes(config.read_bytes())
+    except OSError:
+        raise SetupError("Could not place maintainer/opencode.json in the workdir.") from None
+    entries = sorted(entry.name for entry in workdir.iterdir())
+    if entries != ["opencode.json"]:
+        raise SetupError("Maintainer workdir must contain only opencode.json.")
+    run_opencode_config(workdir, config)
+    if sorted(entry.name for entry in workdir.iterdir()) != ["opencode.json"]:
+        raise SetupError("Maintainer workdir must contain only opencode.json.")
+    ensure_no_session(workdir)
+
+
+def prepare_volunteer_workdir(workdir: Path) -> None:
+    assert_empty(workdir, "volunteer")
+    ensure_no_session(workdir)
+    process_env = os.environ.copy()
+    sanitize_child_environment(process_env)
+    process_env["GIT_TERMINAL_PROMPT"] = "0"
+    try:
+        result = subprocess.run(
+            ["git", "clone", "--depth", "1", PUBLIC_REPO, str(workdir)],
+            env=process_env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        raise SetupError("Git is not available to clone the public Elsewhere repository.") from None
+    if result.returncode != 0:
+        raise SetupError("Could not clone the public Elsewhere repository.")
+    config = workdir / "opencode.json"
+    if not config.is_file():
+        raise SetupError("The cloned repository does not contain root opencode.json.")
+    run_opencode_config(workdir, config)
+    ensure_no_session(workdir)
+
+
+def encode_join_code(
+    project: str, room_id: str, maintainer_agent_id: str, identity_id: str
+) -> str:
+    payload = {
+        "project": project,
+        "room_id": room_id,
+        "maintainer_agent_id": maintainer_agent_id,
+        "maintainer_identity_id": identity_id,
+    }
+    encoded = base64.urlsafe_b64encode(
+        json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    ).decode("ascii")
+    return JOIN_PREFIX + encoded.rstrip("=")
+
+
+def decode_join_code(value: str) -> dict:
+    if not value.startswith(JOIN_PREFIX):
+        raise SetupError("Join code has an unsupported format.")
+    encoded = value[len(JOIN_PREFIX) :]
+    if not encoded or not re.fullmatch(r"[A-Za-z0-9_-]+", encoded):
+        raise SetupError("Join code is malformed.")
+    try:
+        raw = base64.b64decode(
+            encoded + "=" * (-len(encoded) % 4),
+            altchars=b"-_",
+            validate=True,
+        )
+        payload = json.loads(raw.decode("utf-8"))
+    except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
+        raise SetupError("Join code is malformed.") from None
+    fields = {
+        "project",
+        "room_id",
+        "maintainer_agent_id",
+        "maintainer_identity_id",
+    }
+    if not isinstance(payload, dict) or set(payload) != fields:
+        raise SetupError("Join code does not contain the expected setup data.")
+    payload["project"] = validate_slug(payload["project"], "Project")
+    payload["room_id"] = uuid_string(payload["room_id"], "Room ID")
+    payload["maintainer_agent_id"] = uuid_string(
+        payload["maintainer_agent_id"], "Maintainer agent ID"
+    )
+    payload["maintainer_identity_id"] = uuid_string(
+        payload["maintainer_identity_id"], "Maintainer identity ID"
+    )
+    return payload
+
+
+def select_identity(identities: object) -> str:
+    if not isinstance(identities, list) or not identities:
+        raise SetupError("Link a messaging identity before deploying the maintainer.")
+    if any(not isinstance(identity, dict) for identity in identities):
+        raise SetupError("Switch returned an invalid linked identity.")
+    if len(identities) == 1:
+        return uuid_string(identities[0].get("id"), "Linked identity ID")
+    print("Choose the linked messaging identity used by this room:")
+    for index, identity in enumerate(identities, 1):
+        platform = identity.get("bridge_type") or "messaging"
+        username = identity.get("external_username") or "unnamed identity"
+        print(f"{index}. {platform}: {username}")
+    try:
+        choice = int(input("Identity number: ").strip())
+    except (ValueError, EOFError):
+        raise SetupError("A valid linked identity selection is required.") from None
+    if choice < 1 or choice > len(identities):
+        raise SetupError("Linked identity selection is out of range.")
+    return uuid_string(identities[choice - 1].get("id"), "Linked identity ID")
+
+
+def apply_addressing_rule(
+    client: Gateway,
+    volunteer_agent_id: str,
+    room_id: str,
+    maintainer_agent_id: str,
+    maintainer_identity_id: str,
+) -> None:
+    path = f"/agents/{quote(volunteer_agent_id, safe='')}"
+    agent = client.request("GET", path)
+    policy = agent.get("addressing_policy") if isinstance(agent, dict) else None
+    rules = policy.get("rules") if isinstance(policy, dict) else None
+    if not isinstance(rules, list) or not rules:
+        raise SetupError("The volunteer has no explicit owner addressing rule to preserve.")
+    if any(
+        not isinstance(rule, dict)
+        or not rule.get("owner")
+        and not rule.get("owner_agents")
+        for rule in rules
+    ):
+        raise SetupError(
+            "The volunteer already has a non-owner addressing rule. "
+            "Refusing to widen its policy."
+        )
+    scoped_rule = {
+        "rooms": [room_id],
+        "room_groups": "*",
+        "users": [maintainer_identity_id],
+        "agents": [maintainer_agent_id],
+        "owner": False,
+        "owner_agents": False,
+        "platform": False,
+    }
+    updated_rules = [rule for rule in rules if rule != scoped_rule]
+    updated_rules.append(scoped_rule)
+    client.request(
+        "PUT",
+        f"{path}/addressing-policy",
+        {"policy": {"rules": updated_rules}},
+    )
+    updated = client.request("GET", path)
+    after = updated.get("addressing_policy") if isinstance(updated, dict) else None
+    after_rules = after.get("rules") if isinstance(after, dict) else None
+    if (
+        not isinstance(after_rules, list)
+        or scoped_rule not in after_rules
+        or not any(
+            isinstance(rule, dict) and (rule.get("owner") or rule.get("owner_agents"))
+            for rule in after_rules
+        )
+    ):
+        raise SetupError("Switch did not retain the room-scoped maintainer rule.")
+
+
+def add_machine(inputs: dict, machine: Optional[str]) -> dict:
+    if machine:
+        inputs["machine"] = machine
+    return inputs
+
+
+def dry_run_request(
+    base: str, method: str, path: str, body: Optional[dict] = None
+) -> None:
+    print(json.dumps(
+        {
+            "method": method,
+            "url": base + path,
+            "body": body,
+        },
+        indent=2,
+        sort_keys=True,
+    ))
+
+
+def add_common_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--gateway", help="Gateway API base URL ending in /gateway")
+    parser.add_argument("--email", help="Gateway account email, or set SWITCH_GATEWAY_EMAIL")
+    parser.add_argument("--dry-run", action="store_true", help="Print the plan without making changes")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="elsewhere")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    maintainer = subparsers.add_parser("maintainer")
+    maintainer.add_argument("--project", required=True)
+    maintainer.add_argument("--repo", required=True)
+    maintainer.add_argument("--machine")
+    maintainer.add_argument("--model", default="opencode/big-pickle")
+    add_common_options(maintainer)
+
+    volunteer = subparsers.add_parser("volunteer")
+    volunteer.add_argument("--join", required=True)
+    volunteer.add_argument("--handle", required=True)
+    volunteer.add_argument("--machine")
+    add_common_options(volunteer)
+
+    solo = subparsers.add_parser("solo")
+    solo.add_argument("--project", required=True)
+    solo.add_argument("--repo", required=True)
+    solo.add_argument("--handle", default="you")
+    add_common_options(solo)
+    return parser
+
+
+def show_dry_run(args: argparse.Namespace) -> None:
+    base = gateway_url(args)
+    print("DRY RUN. No Gateway, filesystem, Git, or OpenCode actions were performed.")
+    print("Authentication would use POST /auth/login and an in-memory switch_auth cookie.")
+    if args.command == "maintainer":
+        project = validate_slug(args.project, "Project")
+        repo = validate_repo(args.repo)
+        validate_model(args.model)
+        validate_machine(args.machine)
+        inputs = add_machine(
+            {
+                "project": project,
+                "project_repo": repo,
+                "model": args.model,
+            },
+            args.machine,
+        )
+        body = template_request(
+            load_template("maintainer.yaml"),
+            inputs,
+            f"Elsewhere {project} maintainer",
+        )
+        dry_run_request(base, "GET", "/auth/me/identities")
+        dry_run_request(base, "POST", "/rooms/from-template-document", body)
+        dry_run_request(base, "GET", "/rooms/<room-id>")
+        dry_run_request(base, "GET", "/management/agents/<maintainer-agent-id>")
+        print("After deployment: write maintainer/opencode.json and verify config and zero sessions.")
+        return
+
+    if args.command == "volunteer":
+        code = decode_join_code(args.join)
+        handle = validate_slug(args.handle, "Handle")
+        validate_machine(args.machine)
+        inputs = add_machine(
+            {
+                "project": code["project"],
+                "volunteer": handle,
+                "room": "<room-name-from-room-response>",
+                "mode": "cross-owner",
+            },
+            args.machine,
+        )
+        body = template_request(
+            load_template("volunteer.yaml"),
+            inputs,
+            f"Elsewhere {code['project']} {handle} volunteer",
+        )
+        dry_run_request(base, "GET", f"/rooms/{code['room_id']}")
+        dry_run_request(base, "POST", "/rooms/from-template-document", body)
+        dry_run_request(base, "GET", f"/rooms/{code['room_id']}")
+        dry_run_request(base, "GET", "/management/agents/<volunteer-agent-id>")
+        dry_run_request(base, "GET", "/agents/<volunteer-agent-id>")
+        dry_run_request(
+            base,
+            "PUT",
+            "/agents/<volunteer-agent-id>/addressing-policy",
+            {
+                "policy": {
+                    "rules": [
+                        "<existing owner rules, unchanged>",
+                        {
+                            "rooms": [code["room_id"]],
+                            "room_groups": "*",
+                            "users": ["<maintainer-identity-id>"],
+                            "agents": ["<maintainer-agent-id>"],
+                            "owner": False,
+                            "owner_agents": False,
+                            "platform": False,
+                        },
+                    ]
+                }
+            },
+        )
+        dry_run_request(base, "GET", "/agents/<volunteer-agent-id>")
+        print("The room name is resolved from the room ID after authentication.")
+        return
+
+    project = validate_slug(args.project, "Project")
+    repo = validate_repo(args.repo)
+    handle = validate_slug(args.handle, "Handle")
+    maintainer_inputs = {
+        "project": project,
+        "project_repo": repo,
+        "model": "opencode/big-pickle",
+    }
+    maintainer_body = template_request(
+        load_template("maintainer.yaml"),
+        maintainer_inputs,
+        f"Elsewhere {project} maintainer",
+    )
+    dry_run_request(base, "POST", "/rooms/from-template-document", maintainer_body)
+    dry_run_request(base, "GET", "/rooms/<room-id>")
+    dry_run_request(base, "GET", "/management/agents/<maintainer-agent-id>")
+    volunteer_inputs = {
+        "project": project,
+        "volunteer": handle,
+        "room": "<room-name-from-maintainer-response>",
+        "mode": "solo",
+    }
+    volunteer_body = template_request(
+        load_template("volunteer.yaml"),
+        volunteer_inputs,
+        f"Elsewhere {project} {handle} volunteer",
+    )
+    dry_run_request(base, "POST", "/rooms/from-template-document", volunteer_body)
+    dry_run_request(base, "GET", "/rooms/<room-id>")
+    dry_run_request(base, "GET", "/management/agents/<volunteer-agent-id>")
+    print("Both workdirs are prepared and checked before the request message is printed.")
+
+
+def request_message(
+    project: str, repo: str, volunteer: Optional[str] = None
+) -> str:
+    maintainer = f"@elsewhere-{project}-maintainer"
+    mentions = maintainer
+    if volunteer:
+        mentions += f" @elsewhere-{project}-{volunteer}"
+    return (
+        f"{mentions} Please test the quickstart in {repo}, starting with README.md. "
+        "Ask me in this thread before reading any additional source paths."
+    )
+
+
+def finish_output(room_name: str, message: Optional[str] = None) -> None:
+    print("ready")
+    print(f"Room: {room_name}")
+    if message:
+        print("Request message to paste in the kickoff thread:")
+        print(message)
+
+
+def run_maintainer(args: argparse.Namespace) -> None:
+    project = validate_slug(args.project, "Project")
+    repo = validate_repo(args.repo)
+    model = validate_model(args.model)
+    machine = validate_machine(args.machine)
+    if args.dry_run:
+        show_dry_run(args)
+        return
+
+    client = gateway_client(args)
+    identities = client.request("GET", "/auth/me/identities")
+    if isinstance(identities, dict):
+        identities = identities.get("identities")
+    identity_id = select_identity(identities)
+    inputs = add_machine(
+        {
+            "project": project,
+            "project_repo": repo,
+            "model": model,
+        },
+        machine,
+    )
+    response = deploy(
+        client,
+        load_template("maintainer.yaml"),
+        inputs,
+        f"Elsewhere {project} maintainer",
+    )
+    agent = created_agent(response, f"elsewhere-{project}-maintainer")
+    room_id, room_name = room_result(response)
+    try:
+        room = get_room(client, room_id)
+        if room.get("name") != room_name:
+            raise SetupError("Switch returned a room name that does not match deployment.")
+        workdir = wait_for_workdir(
+            client, agent["agent_id"], agent["name"], agent["machine_name"]
+        )
+        prepare_maintainer_workdir(workdir)
+    except SetupError as error:
+        raise SetupError(
+            f"Maintainer was deployed, but setup did not finish: {error} "
+            "Do not post a kickoff mention until the checks pass."
+        ) from None
+    code = encode_join_code(project, room_id, agent["agent_id"], identity_id)
+    print("ready")
+    print(f"Room: {room_name}")
+    print(
+        f"Invite line: scripts/elsewhere volunteer --gateway '{client.base_url}' "
+        f"--join {code} --handle HANDLE"
+    )
+    print("Request message to paste in the kickoff thread:")
+    print(request_message(project, repo))
+
+
+def run_volunteer(args: argparse.Namespace) -> None:
+    code = decode_join_code(args.join)
+    handle = validate_slug(args.handle, "Handle")
+    machine = validate_machine(args.machine)
+    if args.dry_run:
+        show_dry_run(args)
+        return
+
+    client = gateway_client(args)
+    room = get_room(client, code["room_id"])
+    room_name = room.get("name")
+    if not isinstance(room_name, str) or not room_name:
+        raise SetupError("Switch returned a room without a name.")
+    if room_name != f"elsewhere-{code['project']}":
+        raise SetupError("Join code project does not match the target room.")
+    inputs = add_machine(
+        {
+            "project": code["project"],
+            "volunteer": handle,
+            "room": room_name,
+            "mode": "cross-owner",
+        },
+        machine,
+    )
+    name = f"elsewhere-{code['project']}-{handle}"
+    response = deploy(
+        client,
+        load_template("volunteer.yaml"),
+        inputs,
+        f"Elsewhere {code['project']} {handle} volunteer",
+    )
+    agent = created_agent(response, name)
+    try:
+        get_room(client, code["room_id"])
+        workdir = wait_for_workdir(
+            client, agent["agent_id"], agent["name"], agent["machine_name"]
+        )
+        prepare_volunteer_workdir(workdir)
+        apply_addressing_rule(
+            client,
+            agent["agent_id"],
+            code["room_id"],
+            code["maintainer_agent_id"],
+            code["maintainer_identity_id"],
+        )
+    except SetupError as error:
+        raise SetupError(
+            f"Volunteer was deployed, but setup did not finish: {error} "
+            "Do not start a session until the checks pass."
+        ) from None
+    finish_output(room_name)
+
+
+def run_solo(args: argparse.Namespace) -> None:
+    project = validate_slug(args.project, "Project")
+    repo = validate_repo(args.repo)
+    handle = validate_slug(args.handle, "Handle")
+    if args.dry_run:
+        show_dry_run(args)
+        return
+
+    client = gateway_client(args)
+    maintainer_name = f"elsewhere-{project}-maintainer"
+    try:
+        maintainer_response = deploy(
+            client,
+            load_template("maintainer.yaml"),
+            {
+                "project": project,
+                "project_repo": repo,
+                "model": "opencode/big-pickle",
+            },
+            f"Elsewhere {project} maintainer",
+        )
+        maintainer = created_agent(maintainer_response, maintainer_name)
+        room_id, room_name = room_result(maintainer_response)
+        room = get_room(client, room_id)
+        if room.get("name") != room_name:
+            raise SetupError("Switch returned a room name that does not match deployment.")
+        maintainer_workdir = wait_for_workdir(
+            client,
+            maintainer["agent_id"],
+            maintainer["name"],
+            maintainer["machine_name"],
+        )
+        prepare_maintainer_workdir(maintainer_workdir)
+    except SetupError as error:
+        raise SetupError(
+            f"Solo setup stopped during maintainer setup: {error} "
+            "No kickoff message was posted."
+        ) from None
+
+    volunteer_name = f"elsewhere-{project}-{handle}"
+    try:
+        volunteer_response = deploy(
+            client,
+            load_template("volunteer.yaml"),
+            {
+                "project": project,
+                "volunteer": handle,
+                "room": room_name,
+                "mode": "solo",
+            },
+            f"Elsewhere {project} {handle} volunteer",
+        )
+        volunteer = created_agent(volunteer_response, volunteer_name)
+        get_room(client, room_id)
+        volunteer_workdir = wait_for_workdir(
+            client,
+            volunteer["agent_id"],
+            volunteer["name"],
+            volunteer["machine_name"],
+        )
+        prepare_volunteer_workdir(volunteer_workdir)
+    except SetupError as error:
+        raise SetupError(
+            f"Solo maintainer setup is ready, but volunteer setup did not finish: {error} "
+            "The room remains deployed. No kickoff message was posted."
+        ) from None
+    finish_output(room_name, request_message(project, repo, handle))
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        gateway_url(args)
+        if args.command == "maintainer":
+            run_maintainer(args)
+        elif args.command == "volunteer":
+            run_volunteer(args)
+        else:
+            run_solo(args)
+        return 0
+    except (SetupError, ValueError) as error:
+        print(f"elsewhere: {error}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

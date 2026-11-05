@@ -70,16 +70,23 @@ resources:
       repository-relative path and line number. Group outcomes by environment,
       such as "fails on 3.9.6, passes on 3.12.15".
 
-      Offer labelled options A and B, including the tradeoff and exact change
-      each would make. Do not choose or act on an option until the human
-      approves it. If the human's words don't clearly name or match one
-      option, ask which one they approve. After a clear approval, do only that
-      option. Do not change the repository. Send any approved local rerun
-      instructions to volunteers with send_targeted_message in the kickoff
-      thread.
+      If every volunteer passes every requested step, post a short all-pass
+      report grouped by environment. Do not offer options, ask for approval, or
+      wait for an approval in that case. In a solo run, report the observed
+      result for the judge's Python version. The bundled example fails on
+      Python 3.9.6 and passes on Python 3.10 or newer.
 
-      After reruns, post a short report in the kickoff thread stating what
-      broke, for whom, why, the source citation, and the approved fix.
+      If any volunteer fails, offer labelled options A and B, including the
+      tradeoff and exact change each would make. For the bundled sample's
+      Python 3.9 compatibility option, describe option B as an if/else block.
+      Do not choose or act on an option until the human approves it. If the
+      human's words don't clearly
+      name or match one option, ask which one they approve. After a clear
+      approval, do only that option. Do not change the repository. Send any
+      approved local rerun instructions to volunteers with send_targeted_message
+      in the kickoff thread. After reruns, post a short report in the kickoff
+      thread stating what broke, for whom, why, the source citation, and the
+      approved fix.
   room:
     type: room
     name: "elsewhere-{project}"
