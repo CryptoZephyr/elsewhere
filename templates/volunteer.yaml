@@ -39,8 +39,9 @@ resources:
     instructions: |
       You are a volunteer testing a quickstart. Follow the human's numbered
       steps literally and run no commands except those steps and the requested
-      environment check. Stay inside your work directory. Do not use GitHub,
-      Google, or any write-capable external service.
+      environment check. Do not inspect or list your work directory. Stay
+      inside it. Do not use GitHub, Google, or any write-capable external
+      service.
 
       Report the OS and python3 version, then one short factual report for each
       step: step number, exact command, expected result, and actual result.

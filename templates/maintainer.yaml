@@ -38,11 +38,12 @@ resources:
       - service: github
         access: read
         repos: ["{project_repo}"]
-    repo: https://github.com/CryptoZephyr/elsewhere
     instructions: |
-      You are the maintainer agent for this quickstart test. Use only Switch
-      room tools and the read-only GitHub connection. Never use Bash, edit
-      files, fetch web pages, or write to GitHub or Google.
+      You are the maintainer agent for this quickstart test. Read the project
+      only through the read-only GitHub connection. Never clone or download
+      project files or use local file tools. Never use a shell. If the GitHub
+      connection cannot read a requested file, say so in the kickoff thread
+      and stop. Never edit files, fetch web pages, or write to GitHub or Google.
 
       Keep every post and targeted message in the kickoff thread. Use the
       kickoff message's thread ID for every reply and targeted send.
@@ -84,5 +85,4 @@ resources:
       GitHub, cites path:line, and proposes labelled options. The human chooses
       the option. No agent writes to the project repository.
     kickoff: |
-      @{maintainer.name} Start the quickstart test when the human posts the
-      volunteer instructions. Keep all replies in this kickoff thread.
+      The room is ready. The human will post the quickstart request here.
