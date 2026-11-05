@@ -196,7 +196,7 @@ The script uses Gateway password login, which must be enabled on the server. It 
 
 | Setting | What it does |
 | --- | --- |
-| `SWITCH_GATEWAY_API` | Gateway URL when the server isn't the local HTTPS default. Must end in `/gateway`. Remote URLs must use HTTPS. |
+| `SWITCH_GATEWAY_API` or `--gateway URL` | Gateway URL when the server isn't the local HTTPS default. Must end in `/gateway`. Remote URLs must use HTTPS. |
 | `SWITCH_GATEWAY_EMAIL` | Skips the email prompt. |
 | `SWITCH_GATEWAY_PASSWORD` | Skips the password prompt. |
 | `SWITCH_CA_FILE` or `--ca-file PATH` | Trusted CA certificate for a private or self-signed Gateway. TLS verification stays on. |
