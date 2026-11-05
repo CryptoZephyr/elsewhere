@@ -161,6 +161,10 @@ main {
   padding: 0.5rem 0 0.4rem;
 }
 
+.page-title .lead {
+  margin-bottom: 0.5rem;
+}
+
 .notebook-entry {
   display: grid;
   grid-template-columns: minmax(9rem, 11rem) 1px minmax(0, 1fr);
@@ -265,6 +269,104 @@ p {
 
 .home-hero-title .carol {
   color: var(--carol-text);
+}
+
+.home-steps > li {
+  margin-bottom: 0.85rem;
+}
+
+.home-steps > li::marker {
+  color: var(--ink);
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 1.2rem;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem 1rem;
+  margin: 1.4rem 0 0.4rem;
+}
+
+.primary-cta {
+  display: inline-block;
+  padding: 0.68rem 1rem;
+  color: var(--canvas);
+  background: var(--ink);
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.primary-cta:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.closing-cta {
+  margin: 1.5rem 0 0;
+}
+
+.plain-note {
+  color: var(--muted);
+}
+
+.run-summary {
+  margin: 0 0 1rem;
+  padding: 0.2rem 0 0.2rem 0.9rem;
+  border-left: 2px solid var(--rule);
+  font-style: normal;
+}
+
+.run-options p {
+  margin-bottom: 0.4rem;
+}
+
+.run-options p span {
+  font-family: "DM Mono", ui-monospace, monospace;
+}
+
+details {
+  padding: 0.9rem 0 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+details summary {
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  display: inline-block;
+  width: 1.4rem;
+  margin-right: 0.25rem;
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-weight: 500;
+  content: "+";
+}
+
+details[open] > summary::before {
+  content: "−";
+}
+
+details summary:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.details-content {
+  padding: 0.85rem 0 0 1.65rem;
+}
+
+.details-content > :last-child {
+  margin-bottom: 0;
 }
 
 .entry-content > :last-child {
@@ -695,6 +797,10 @@ li::marker {
   .options-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 1.2rem;
+  }
+
+  .details-content {
+    padding-left: 0;
   }
 
   .procedure-steps {
