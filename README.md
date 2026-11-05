@@ -40,17 +40,22 @@ connect the messaging workspace and manage agent machines. The server must
 support managed agents. Set up OpenCode on each machine. Connect the maintainer
 account's GitHub access with read-only access to the project repository only.
 
-1. Import and deploy `templates/maintainer.yaml` as the project maintainer.
-   Set the project slug and GitHub `owner/name` repository, choose a machine,
-   and keep the model at `opencode/big-pickle` or select another free model.
+1. Run templates through the Gateway template-document endpoint,
+   `POST /gateway/rooms/from-template-document`, as the person who owns each
+   agent. Import `templates/maintainer.yaml` and deploy it as the project
+   maintainer. Set the project slug and GitHub `owner/name` repository, choose
+   a machine, and keep the model at `opencode/big-pickle` or select another
+   free model. The request has the template YAML in `template`, parameter
+   values in `inputs`, and a label in `template_name`.
 2. Before any maintainer session starts, clone this public repository into
    a separate local directory and copy only `maintainer/opencode.json` to the
    root of the maintainer's working directory. Do not put the project checkout
    in the maintainer's working directory. The maintainer template has no `repo`
    field, so deployment does not populate its work directory.
 3. Invite volunteer humans to the room. Each volunteer imports and deploys
-   `templates/volunteer.yaml`, choosing the room created in step 1 and their
-   own machine.
+   `templates/volunteer.yaml` through the same endpoint, choosing the room
+   created in step 1, their own machine, the project slug, and a unique
+   lowercase `volunteer` handle such as `volunteer-1`.
 4. Before any volunteer session starts, clone this public repository into
    each volunteer's empty working directory. The template `repo` field adds
    an instruction for the agent to clone the repository at session start if
@@ -73,7 +78,8 @@ account's GitHub access with read-only access to the project repository only.
    the effective permissions. The maintainer config is copied from
    `maintainer/opencode.json`; volunteer configs come from the repository
    root.
-7. Post a quickstart request in the room and keep the exchange in the kickoff
+7. Reply in the template kickoff thread with the quickstart request and
+   mention the maintainer agent to start it. Keep the full exchange in that
    thread. The maintainer waits for all volunteers, reports the evidence and
    source citations, then waits for a human to approve a labelled option.
 

@@ -5,6 +5,10 @@ params:
     description: Lowercase project slug used in the volunteer agent name.
     default: quickstart
     pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+  volunteer:
+    type: string
+    description: Unique lowercase volunteer handle used in the agent name.
+    pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
   room:
     type: room
     description: Existing Elsewhere project room to join.
@@ -21,12 +25,12 @@ params:
 resources:
   volunteer:
     type: agent
-    name: "elsewhere-{project}-volunteer"
-    display_name: "Elsewhere {project} volunteer"
+    name: "elsewhere-{project}-{volunteer}"
+    display_name: "Elsewhere {project} {volunteer}"
     description: Follows a quickstart and reports observed results.
     provider: opencode
     machine: "{machine}"
-    directory: "{$agents_dir}/elsewhere-{project}-volunteer"
+    directory: "{$agents_dir}/elsewhere-{project}-{volunteer}"
     model: "{model}"
     advanced_config:
       smallModel: "{model}"
